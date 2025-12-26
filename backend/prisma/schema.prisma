@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ShortUrl {
+  id          String        @id @default(uuid())
+  originalUrl String
+  shortUrl    String
+  clicks      Int           @default(0)
+  expiresAt   DateTime?
+  status      urlStatus     @default(UNACTIVE)
+  logs        ShortUrlLog[]
+
+  createAt DateTime @default(now())
+  updateAp DateTime @updatedAt
+}
+
+model ShortUrlLog {
+  id      Int        @id @default(autoincrement())
+  status  logsStatus @default(CREATED)
+  details String?
+
+  shortUrl   ShortUrl? @relation(fields: [shortUrlId], references: [id])
+  shortUrlId String?
+
+  createAt DateTime @default(now())
+  updateAp DateTime @updatedAt
+}
+
+enum urlStatus {
+  ACTIVE
+  UNACTIVE
+  EXPIRATED
+}
+
+enum logsStatus {
+  CREATED
+  UPDATED
+  DELETED
+  REPLACED
+  FAILED
+}
