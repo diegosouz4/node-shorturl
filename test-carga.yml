@@ -1,0 +1,11 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 60
+    - arrivalRate: 200
+scenarios:
+  - flow:
+    - post:
+        url: '/api/v1/urls'
+        json:
+          url: 'https://dsouza.com.br'
