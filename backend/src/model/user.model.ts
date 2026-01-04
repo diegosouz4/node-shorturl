@@ -8,6 +8,10 @@ class User {
     return userDb.create({ data: { ...newUser, role: 'FREEBIE' }, select: { id: true, email: true } });
   }
 
+  addUser(newUser: createUserTypes) {
+    return userDb.create({ data: { ...newUser }, select: { id: true, email: true } });
+  }
+
   find({ email, id }: { email?: string, id?: string }) {
     return userDb.findFirst({ where: { OR: [{ email }, { id }] } })
   }

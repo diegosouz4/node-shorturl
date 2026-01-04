@@ -1,10 +1,12 @@
+import { type logintypes, jwtUserParams, loginParams } from "../types/session.types";
+import type { User } from "../generated/client";
 import { UserModel } from "../model/user.model";
-import { type logintypes, loginParams } from "../types/session.types";
 import { createUserParams, createUserTypes } from "../types/user.types";
 import { handleUserPass } from "../utils/handleUserPass.util";
 
 import jwt from 'jsonwebtoken';
 import { config } from '../config/system.config';
+import { UserPolicy } from "../policies/user.policy";
 
 const { expiresIn, secret } = config.jwt;
 
@@ -13,8 +15,8 @@ class Session {
     loginParams.parse({ ...user });
 
     const find = await UserModel.find({ email: user.email });
-    if (!find) throw new Error('Usuario nao cadastrado!');
-    if (!(await handleUserPass.comparePass(user.password, find.password))) throw new Error('Senha invalida!');
+    if (!find) throw new Error('Credenciais inválidas');
+    if (!(await handleUserPass.comparePass(user.password, find.password))) throw new Error('Credenciais inválidas');
 
     const token = jwt.sign({ id: find.id, role: find.role }, secret, { expiresIn });
     if (!token) throw new Error("Erro ao gerar token de acesso!");
@@ -26,11 +28,24 @@ class Session {
   }
 
 
-  async create({ email, firstName, lastName, password, role }: createUserTypes) {
-    createUserParams.parse({ email, firstName, lastName, password, role });
-    const hashPass = await handleUserPass.generateHash({ password });
+  async addUser({ payload, reqUser }: { payload: createUserTypes, reqUser: User }) {
 
-    return { email, firstName, lastName, password: hashPass, role }
+    createUserParams.parse({ ...payload });
+    jwtUserParams.parse({ ...reqUser });
+
+    if (!UserPolicy.canAdd(reqUser, payload.role)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+
+    if (payload.password) payload.password = await handleUserPass.generateHash({ password: payload.password });
+
+    const sanitize: createUserTypes = {
+      email: payload.email.trim(),
+      firstName: payload.firstName.trim(),
+      lastName: payload.lastName.trim(),
+      role: payload.role,
+      password: payload.password
+    }
+
+    return await UserModel.addUser({ ...sanitize });
   }
 }
 

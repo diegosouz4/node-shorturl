@@ -3,6 +3,10 @@ import { errorResponse, successResponse } from '../utils/handlerResponse.util';
 import { createUserParams, createUserTypes } from '../types/user.types';
 import { SessionService } from '../services/session.service';
 import { logintypes } from '../types/session.types';
+import { AuthTokenData } from '../middlewares/ensureAuth.middleware';
+
+import { z } from 'zod'
+import { id } from 'zod/v4/locales';
 
 class Session {
   async login(req: Request, res: Response) {
@@ -21,11 +25,23 @@ class Session {
   }
 
   async addUser(req: Request, res: Response) {
+    const payload = (req.body as createUserTypes);
+    const jwtUser = (req as AuthTokenData).user;
+
     try {
-      return successResponse({ res, message: 'Novo usuario criado!', statusCode: 201 });
-    } catch (err) {
+      const newUser = await SessionService.addUser({ payload, reqUser: jwtUser });
+      return successResponse({ res, message: 'Novo usuario criado!', statusCode: 201, data: newUser });
+    } catch (err: unknown) {
+      let details = '';
+
+      if (err instanceof z.ZodError) {
+        details = err.issues.map(({ message }) => message).join(',');
+      } else if (err instanceof Error) {
+        details = err.message;
+      }
+
       console.log("[SessionController | addUser] Error: ", err);
-      return errorResponse({ res, message: 'erro ao criar shorted!', statusCode: 500 })
+      return errorResponse({ res, message: 'Error ao criar usuário!', statusCode: 500, details })
     }
   }
 }

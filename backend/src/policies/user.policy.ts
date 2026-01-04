@@ -27,8 +27,12 @@ class Policy {
     return this.canAssingRole(requester, target);
   }
 
-  canAdd(requester: baseUser, target: baseUser) {
-    return this.canAssingRole(requester, target);
+  canAdd(requester: baseUser, targetRole: Roles) {
+    if(!handlePermisson.isAdminOrMaster(requester.role)) return false;
+    if(requester.role === 'ADMIN' && handlePermisson.isAdminOrMaster(targetRole)) return false;
+    if(requester.role === 'MASTER' && targetRole === 'MASTER') return false;
+    
+    return true;
   }
 
   canDelete(requester: baseUser, target: baseUser) {
