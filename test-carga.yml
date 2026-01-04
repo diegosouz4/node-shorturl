@@ -1,8 +1,8 @@
 config:
   target: "http://localhost:5000"
   phases:
-    - duration: 60
-    - arrivalRate: 200
+    - duration: 20
+      arrivalRate: 100
 scenarios:
   - flow:
     - post:

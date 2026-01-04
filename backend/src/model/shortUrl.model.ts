@@ -7,7 +7,7 @@ class ShortUrl {
   }
 
   async list() {
-    return db.shortUrl.findMany();
+    return db.shortUrl.findMany({ take: 20 });
   }
 
   async updateShortURL({ id, shortUrl }: { id: string, shortUrl: string }) {

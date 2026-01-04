@@ -5,6 +5,7 @@ import { generateShortURL } from "../utils/generateShortURL.util";
 class ShortURL {
   async create({ url }:createShortURLType) {
     createShortURL.parse({ url });
+    generateShortURL(7);
 
     const created = await shortUrlModel.create({ url });
     if(!created) throw new Error('Error ao tentar criar a URL')
