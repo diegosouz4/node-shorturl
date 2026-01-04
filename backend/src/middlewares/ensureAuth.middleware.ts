@@ -3,10 +3,14 @@ import type { Roles } from '../generated/client';
 import { errorResponse } from '../utils/handlerResponse.util';
 import { jwtValidate } from '../types/session.types';
 import { z } from 'zod'
+import { db } from '../config/db.config';
+import type { User } from '../generated/client';
 
 import jwt from 'jsonwebtoken';
 import { config } from '../config/system.config';
 const { secret } = config.jwt;
+
+const userDb = db.user;
 
 export type JWTUSER = {
   id: string;
@@ -14,12 +18,12 @@ export type JWTUSER = {
 }
 
 export interface AuthTokenData extends Request {
-  user: JWTUSER
+  user: User;
 }
 
 class Auth {
   ensureAuth() {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
       const { headers } = req;
 
       try {
@@ -31,7 +35,10 @@ class Auth {
         jwtValidate.parse({ token });
         const decoded = jwt.verify(token, secret) as JWTUSER;
 
-        (req as AuthTokenData).user = { ...decoded };
+        const user = await userDb.findUnique({ where: { id: decoded.id }, omit: { password: false } });
+        if (!user) throw new Error('Usuário inválido');
+
+        (req as AuthTokenData).user = { ...user };
 
       } catch (err: unknown) {
         let details = '';
