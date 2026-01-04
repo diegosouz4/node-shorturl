@@ -10,6 +10,7 @@ router.use(EnsureAuthMiddleware.ensureAuth());
 
 router.get('/', EnsureAuthMiddleware.ensureRole(), UserController.list);
 router.get('/:id', EnsureAuthMiddleware.ensureRole(['FREEBIE', 'SUBSCRIBER', 'ADMIN', 'MASTER']), UserController.find);
+router.patch('/:id', EnsureAuthMiddleware.ensureRole(['FREEBIE', 'SUBSCRIBER', 'ADMIN', 'MASTER']), UserController.update);
 router.delete('/:id', EnsureAuthMiddleware.ensureRole(), UserController.delete);
 
 export default router;

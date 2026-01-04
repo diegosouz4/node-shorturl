@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
+import type { createUserTypes, updateUserTypes } from '../types/user.types';
+
 import { errorResponse, successResponse } from '../utils/handlerResponse.util';
 import { UserService } from '../services/user.service';
-import { createUserTypes } from '../types/user.types';
 import { z } from 'zod';
 import { AuthTokenData } from '../middlewares/ensureAuth.middleware';
 
@@ -49,8 +50,29 @@ class User {
     const { id } = req.params;
 
     try {
-      const user = await UserService.find({ findId: id, user: jwtUser });
+      const user = await UserService.find({ findId: id, reqUser: jwtUser });
       return successResponse({ res, message: 'Sucesso ao procurar o usuario', statusCode: 200, data: user });
+    } catch (err) {
+      let details = '';
+
+      if (err instanceof Error) {
+        details = err.message;
+      }
+
+      return errorResponse({ res, message: 'Erro ao procurar o usuario', statusCode: 500, details });
+    }
+  }
+
+  async update(req: Request, res: Response) {
+    const jwtUser = (req as AuthTokenData).user;
+    const { id } = req.params;
+    const payload = req.body as updateUserTypes;
+
+    payload.id = id;
+
+    try {
+      await UserService.update({payload, reqUser: jwtUser});
+      return successResponse({ res, message: 'Sucesso ao procurar o usuario', statusCode: 200 });
     } catch (err) {
       let details = '';
 
@@ -67,7 +89,7 @@ class User {
     const { id } = req.params;
 
     try {
-      const user = await UserService.delete({ findId: id, user: jwtUser });
+      const user = await UserService.delete({ findId: id, reqUser: jwtUser });
       return successResponse({ res, message: 'Sucesso ao deletar o usuario', statusCode: 200 });
     } catch (err) {
       let details = '';

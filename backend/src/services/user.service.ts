@@ -1,10 +1,11 @@
 import { UserModel } from "../model/user.model";
-import { jwtUserParams, type jwtUsertypes } from "../types/session.types";
-import { createUserParams, createUserTypes, userId } from "../types/user.types";
-import { checkPermision } from "../utils/checkPermision.util";
+import { jwtUserParams } from "../types/session.types";
+import { createUserParams, type createUserTypes, updateUserParams, type updateUserTypes, userId } from "../types/user.types";
 import { handleUserPass } from "../utils/handleUserPass.util";
+import { UserPolicy } from "../policies/user.policy";
+import type { User } from '../generated/client';
 
-class User {
+class UserServices {
   async create(userQuery: createUserTypes) {
     createUserParams.parse({ ...userQuery });
 
@@ -16,58 +17,73 @@ class User {
 
     const create = await UserModel.create({ ...userQuery, password: hashPass });
     if (!create) throw new Error('Nao foi possivel criar o usuario!');
+
     return create;
   }
 
-  async list(user: jwtUsertypes) {
-    jwtUserParams.parse(user);
-    const reqUser = await UserModel.find({ id: user.id });
+  async list(reqUser: User) {
+    jwtUserParams.parse(reqUser);
 
-    if (!reqUser || reqUser.role !== user.role) throw new Error('Usuário inválido!');
-    if (!checkPermision(reqUser.role)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+    if (!UserPolicy.canList(reqUser)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
 
-    const users = await UserModel.list();
-    return users;
+    return await UserModel.list();
   }
 
-  async find({ findId, user }: { findId: string, user: jwtUsertypes }) {
+  async find({ findId, reqUser }: { findId: string, reqUser: User }) {
     userId.parse({ id: findId });
-    const reqUser = await UserModel.find({ id: user.id });
 
-    if (!reqUser || reqUser.role !== user.role) throw new Error('Usuário inválido!');
-    if (!checkPermision(reqUser.role, ['FREEBIE', 'SUBSCRIBER', 'ADMIN', 'MASTER'])) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+    const isSelfView = reqUser.id === findId;
 
-    if (reqUser.id !== findId && !['ADMIN', 'MASTER'].includes(reqUser.role)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+    const targetUser = isSelfView ? reqUser : await UserModel.find({ id: findId });
+    if (!targetUser) throw new Error('Usuário não encontrado!');
 
-    const findeduser = await UserModel.find({ id: findId });
-    if (!findeduser) throw new Error('Usuário não encontrado!');
+    if (!UserPolicy.canView(reqUser, targetUser)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
 
-    if (reqUser.role === 'ADMIN' && reqUser.id !== findId && ['ADMIN', 'MASTER'].includes(findeduser.role)) throw new Error('Perfil do tipo admin só pode verificar perfis abaixo de admin!');
-
-    const { id, email, firstName, lastName, createAt, updateAt, role } = findeduser;
+    const { id, email, firstName, lastName, createAt, updateAt, role } = targetUser;
 
     const sanitize = { id, email, firstName, lastName, createAt, updateAt, role };
     return sanitize;
   }
 
-  async delete({ findId, user }: { findId: string, user: jwtUsertypes }) {
+  async update({ payload, reqUser }: { payload: updateUserTypes, reqUser: User }) {
+    userId.parse({ id: reqUser.id });
+    updateUserParams.parse({ ...payload });
+
+    const isSelfUpdate = reqUser.id === payload.id;
+
+    const targetUser = isSelfUpdate ? reqUser : await UserModel.find({ id: payload.id });
+    if (!targetUser) throw new Error('Usuário não encontrado!');
+
+    if (!UserPolicy.canUpdate(reqUser, targetUser)) throw new Error('Você não tem autorização para atualizar este usuário!');
+
+    const sanitizePayload: updateUserTypes = { id: payload.id };
+
+    if (payload.email) sanitizePayload.email = payload.email.trim();
+    if (payload.firstName) sanitizePayload.firstName = payload.firstName.trim();
+    if (payload.lastName) sanitizePayload.lastName = payload.lastName.trim();
+    if (payload.password) sanitizePayload.password = await handleUserPass.generateHash({ password: payload.password });
+
+    if (payload.role && payload.role !== targetUser.role) {
+      if (!UserPolicy.canChangeRole(reqUser, targetUser)) throw new Error('Você não tem autorização para alterar o papel deste usuário!');
+      sanitizePayload.role = payload.role;
+    }
+
+    return await UserModel.update(sanitizePayload);
+  }
+
+  async delete({ findId, reqUser }: { findId: string, reqUser: User }) {
     userId.parse({ id: findId });
-    const reqUser = await UserModel.find({ id: user.id });
 
-    if (!reqUser || reqUser.role !== user.role) throw new Error('Usuário inválido!');
-    if (!checkPermision(reqUser.role, ['ADMIN', 'MASTER'])) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+    const isSelfDelete = reqUser.id === findId;
 
-    if (findId === user.id) throw new Error('Usuário não pode se auto deletar!');
+    const targetUser = isSelfDelete ? reqUser : await UserModel.find({ id: findId });
+    if (!targetUser) throw new Error('Usuário não encontrado!');
 
-    const findeduser = await UserModel.find({ id: findId });
-    if (!findeduser) throw new Error('Usuário não encontrado!');
-
-    if (reqUser.role === 'ADMIN' && ['ADMIN', 'MASTER'].includes(findeduser.role)) throw new Error('Perfil do tipo admin só pode remover perfis abaixo de admin!');
-    if (reqUser.role === 'MASTER' && findeduser.role === 'MASTER') throw new Error('Perfil do tipo master só pode remover perfis abaixo de master!');
+    if (!UserPolicy.canDelete(reqUser, targetUser)) throw new Error('Você não tem autorização para remover este usuário!');
 
     return await UserModel.delete(findId);
   }
 }
 
 
-export const UserService = new User();
+export const UserService = new UserServices();
