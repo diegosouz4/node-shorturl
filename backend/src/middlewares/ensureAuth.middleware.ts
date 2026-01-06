@@ -35,8 +35,9 @@ class Auth {
         jwtValidate.parse({ token });
         const decoded = jwt.verify(token, secret) as JWTUSER;
 
-        const user = await userDb.findUnique({ where: { id: decoded.id }, omit: { password: false } });
+        const user = await userDb.findUnique({ where: { id: decoded.id } });
         if (!user) throw new Error('Usuário inválido');
+        if (decoded.role !== user.role) throw new Error("É preciso fazer o login novamente!");
 
         (req as AuthTokenData).user = { ...user };
 
@@ -47,7 +48,7 @@ class Auth {
         } else if (err instanceof Error) {
           details = err.message;
         }
-        return errorResponse({ res, message: "Acesso nao autorizado!", statusCode: 401, details });
+        return errorResponse({ res, message: "Acesso não autorizado!", statusCode: 401, details });
       }
 
       return next();
