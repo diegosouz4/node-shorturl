@@ -10,7 +10,7 @@ datasource db {
 model ShortUrl {
   id          String    @id @default(uuid())
   originalUrl String
-  shortUrl    String
+  shortUrl    String    @unique
   clicks      Int       @default(0)
   expiresAt   DateTime?
 
@@ -20,8 +20,10 @@ model ShortUrl {
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
 }
 
 model ShortUrlLog {
@@ -29,11 +31,13 @@ model ShortUrlLog {
   status  logsStatus @default(CREATED)
   details String?
 
-  shortUrl   ShortUrl? @relation(fields: [shortUrlId], references: [id])
-  shortUrlId String?
+  shortUrl   ShortUrl? @relation(fields: [shortUrlId], references: [id], onDelete: Cascade)
+  shortUrlId String
 
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shortUrlId, createdAt])
 }
 
 model User {
@@ -46,8 +50,10 @@ model User {
 
   urls ShortUrl[]
 
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
 }
 
 enum Roles {
@@ -60,7 +66,7 @@ enum Roles {
 enum urlStatus {
   ACTIVE
   UNACTIVE
-  EXPIRATED
+  EXPIRED
 }
 
 enum logsStatus {
