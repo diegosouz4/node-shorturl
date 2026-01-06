@@ -1,5 +1,5 @@
 import { db } from '../config/db.config';
-import type { insertShortUrl } from '../types/shortUrl.types';
+import type { findShortURLType, insertShortUrl } from '../types/shortUrl.types';
 
 const dbShortUrl = db.shortUrl;
 
@@ -10,6 +10,10 @@ class ShortUrlModel {
     return dbShortUrl.create({ data: { originalUrl: url, shortUrl, expiresAt, userId, logs: { create: { status: 'CREATED', details: 'URL de teste' } } } });
   }
 
+  async find({ shortUrl, urlId }: findShortURLType) {
+    return dbShortUrl.findFirst({ where: { OR: [{ id: urlId }, { shortUrl }] }, include: { user: { select: { id: true, role: true } } } });
+  }
+
   async list() {
     return dbShortUrl.findMany({ take: 20 });
   }
@@ -18,9 +22,6 @@ class ShortUrlModel {
     return dbShortUrl.update({ where: { id }, data: { shortUrl } });
   }
 
-  async findByShort(shortUrl: string) {
-    return dbShortUrl.findFirst({ where: { shortUrl } });
-  }
 
   async countByUser({ id }: { id: string }) {
     return dbShortUrl.count({ where: { userId: id } });

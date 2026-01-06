@@ -14,7 +14,13 @@ export const createShortURL = z.object(
   }
 );
 
+export const findShortUrl = z.object({
+  shortUrl: z.string({ error: "Url passada é inválida!" }).optional(),
+  urlId: z.uuid({ error: "Id passado é inválido!" }).optional(),
+}).refine(({ shortUrl, urlId }) => shortUrl || urlId, { error: "Informe shortUrl ou urlId para consulta" });
+
 export type createShortURLType = z.infer<typeof createShortURL>;
+export type findShortURLType = z.infer<typeof findShortUrl>;
 
 export type insertShortUrl = createShortURLType & {
   shortUrl: string;
