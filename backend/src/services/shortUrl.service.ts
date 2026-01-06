@@ -1,37 +1,35 @@
+import { User } from "../generated/client";
 import { shortUrlModel } from "../model/shortUrl.model";
-import { type createShortURLType, createShortURL } from "../types/shortUrl.types";
 import { generateShortURL } from "../utils/generateShortURL.util";
+import { type createShortURLType, createShortURL } from "../types/shortUrl.types";
+import { userId } from "../types/user.types";
+import { shortUrlPolicies } from "../policies/shortUrl.policy";
 
-class ShortURL {
-  async create({ url }:createShortURLType) {
-    createShortURL.parse({ url });
-    generateShortURL(7);
+class ShortURLServices {
+  async create({ payload, reqUser }: { payload: createShortURLType, reqUser: User }) {
+    createShortURL.parse({ ...payload });
+    userId.parse({ id: reqUser.id });
 
-    const created = await shortUrlModel.create({ url });
-    if(!created) throw new Error('Error ao tentar criar a URL')
+    const totalCreated = await shortUrlModel.countByUser({ id: reqUser.id });
+    if (!shortUrlPolicies.create({ requester: { ...reqUser, totalCreated } })) throw new Error('Você não tem autorização para executar esse tipo de ação!');
 
     let shortUrl = '';
-    for(let i = 0; i < 3; i++){
-      const short = generateShortURL(7);
-      const find = await shortUrlModel.findByShort(short);
-      if(find) continue;
 
-      shortUrl = short;
+    for (let i = 0; i < 3; i++) {
+      const short = generateShortURL(7);
+      const exist = await shortUrlModel.findByShort(short);
+
+      if (!exist) {
+        shortUrl = short;
+        break;
+      };
     }
 
-    if(!shortUrl) throw new Error('Nao foi possivel gerar a shorURL');
+    if (!shortUrl) throw new Error('Falha ao gerar shortURL após múltiplas tentativas');
+    const createShortUrl = await shortUrlModel.create({ userId: reqUser.id, payload: { ...payload, shortUrl } });
 
-    const updated = await shortUrlModel.updateShortURL({id: created.id, shortUrl });
-    if(!updated) throw new Error('Nao foi possivel gerar a shorURL');
-
-    return updated;
-  }
-
-  async list() {
-    const list = await shortUrlModel.list();
-    if(!list) throw new Error('Nao conseguiu listar as URLs')
-    return list;
+    return createShortUrl;
   }
 }
 
-export const shortURLServices = new ShortURL();
+export const shortURLServices = new ShortURLServices();
