@@ -1,6 +1,6 @@
 import { type logintypes, jwtUserParams, loginParams } from "../types/session.types";
 import type { User } from "../generated/client";
-import { UserModel } from "../model/user.model";
+import { userModel } from "../model/user.model";
 import { createUserParams, createUserTypes } from "../types/user.types";
 import { handleUserPass } from "../utils/handleUserPass.util";
 
@@ -10,11 +10,11 @@ import { UserPolicy } from "../policies/user.policy";
 
 const { expiresIn, secret } = config.jwt;
 
-class Session {
+class SessionService {
   async login(user: logintypes) {
     loginParams.parse({ ...user });
 
-    const find = await UserModel.find({ email: user.email });
+    const find = await userModel.find({ email: user.email });
     if (!find) throw new Error('Credenciais inválidas');
     if (!(await handleUserPass.comparePass(user.password, find.password))) throw new Error('Credenciais inválidas');
 
@@ -45,8 +45,8 @@ class Session {
       password: payload.password
     }
 
-    return await UserModel.addUser({ ...sanitize });
+    return await userModel.addUser({ ...sanitize });
   }
 }
 
-export const SessionService = new Session();
+export const sessionService = new SessionService();
