@@ -14,6 +14,10 @@ class ShortUrlModel {
     return dbShortUrl.findFirst({ where: { OR: [{ id: urlId }, { shortUrl }] }, include: { user: { select: { id: true, role: true } } } });
   }
 
+  async remove({ urlId }: findShortURLType) {
+    return dbShortUrl.delete({ where: { id: urlId } });
+  }
+
   async list() {
     return dbShortUrl.findMany({ take: 20 });
   }
@@ -21,7 +25,6 @@ class ShortUrlModel {
   async updateShortURL({ id, shortUrl }: { id: string, shortUrl: string }) {
     return dbShortUrl.update({ where: { id }, data: { shortUrl } });
   }
-
 
   async countByUser({ id }: { id: string }) {
     return dbShortUrl.count({ where: { userId: id } });

@@ -46,6 +46,24 @@ class ShortURLServices {
 
     return target;
   }
+
+  async remove({ payload, reqUser }: { payload: findShortURLType, reqUser: User }) {
+    findShortUrl.parse({ ...payload });
+    userId.parse({ id: reqUser.id });
+
+    const sanitize: findShortURLType = {};
+    if (payload.shortUrl) sanitize.shortUrl = payload.shortUrl.trim();
+    if (payload.urlId) sanitize.urlId = payload.urlId.trim();
+
+    const target = await shortUrlModel.find({ ...sanitize });
+    if (!target) throw new Error("Url não foi encontrada!");
+
+    if (target.status === 'ACTIVE') throw new Error('URLs ativas não podem ser removidas. Desative antes de excluir.');
+    if (!shortUrlPolicies.delete({ requester: reqUser, target })) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+
+    const del = await shortUrlModel.remove({ urlId: target.id });
+    return del;
+  }
 }
 
 export const shortURLServices = new ShortURLServices();

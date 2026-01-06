@@ -35,6 +35,21 @@ class ShortUrlController {
       return errorResponse({ res, message: 'Erro ao encontrar a url', statusCode: 500, details })
     }
   }
+
+  async delete(req: Request, res: Response) {
+    try {
+      const { shortUrl } = req.params;
+      const reqUser = (req as AuthTokenData).user;
+
+      const data = await shortURLServices.find({ payload: { shortUrl }, reqUser });
+      return successResponse({ res, message: 'Url deletada!', statusCode: 204 });
+    } catch (err: unknown) {
+      console.log("[shortUrlController | delete] Error: ", err);
+
+      let details = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao deletar a url', statusCode: 500, details })
+    }
+  }
 }
 
 export const shortUrlController = new ShortUrlController();

@@ -31,6 +31,13 @@ class shortUrlPolicy {
 
     return true;
   }
+
+  delete({ requester, target }: { requester: baseUser, target: findUrlPlusUser }) {
+    const isUrlActive = target.status === 'ACTIVE';
+
+    if (isUrlActive) return false;
+    return this.view({ requester, target })
+  }
 }
 
 export const shortUrlPolicies = new shortUrlPolicy();
