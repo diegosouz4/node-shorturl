@@ -3,7 +3,7 @@ import { createUserTypes, updateUserTypes } from '../types/user.types';
 
 const userDb = db.user;
 
-class User {
+class UserModel {
   create(newUser: createUserTypes) {
     return userDb.create({ data: { ...newUser, role: 'FREEBIE' }, select: { id: true, email: true } });
   }
@@ -29,4 +29,4 @@ class User {
   }
 }
 
-export const UserModel = new User();
+export const userModel = new UserModel();

@@ -1,21 +1,21 @@
-import { UserModel } from "../model/user.model";
+import { userModel } from "../model/user.model";
 import { jwtUserParams } from "../types/session.types";
 import { createUserParams, type createUserTypes, updateUserParams, type updateUserTypes, userId } from "../types/user.types";
 import { handleUserPass } from "../utils/handleUserPass.util";
 import { UserPolicy } from "../policies/user.policy";
 import type { User } from '../generated/client';
 
-class UserServices {
+class UserService {
   async create(userQuery: createUserTypes) {
     createUserParams.parse({ ...userQuery });
 
-    const findUser = await UserModel.find({ email: userQuery.email });
+    const findUser = await userModel.find({ email: userQuery.email });
     if (findUser) throw new Error('Usuario ja cadastrado!');
 
     const hashPass = await handleUserPass.generateHash({ password: userQuery.password });
     if (!hashPass) throw new Error('Error ao gerar o hashPass!');
 
-    const create = await UserModel.create({ ...userQuery, password: hashPass });
+    const create = await userModel.create({ ...userQuery, password: hashPass });
     if (!create) throw new Error('Nao foi possivel criar o usuario!');
 
     return create;
@@ -26,7 +26,7 @@ class UserServices {
 
     if (!UserPolicy.canList(reqUser)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
 
-    return await UserModel.list();
+    return await userModel.list();
   }
 
   async find({ findId, reqUser }: { findId: string, reqUser: User }) {
@@ -34,7 +34,7 @@ class UserServices {
 
     const isSelfView = reqUser.id === findId;
 
-    const targetUser = isSelfView ? reqUser : await UserModel.find({ id: findId });
+    const targetUser = isSelfView ? reqUser : await userModel.find({ id: findId });
     if (!targetUser) throw new Error('Usuário não encontrado!');
 
     if (!UserPolicy.canView(reqUser, targetUser)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
@@ -51,7 +51,7 @@ class UserServices {
 
     const isSelfUpdate = reqUser.id === payload.id;
 
-    const targetUser = isSelfUpdate ? reqUser : await UserModel.find({ id: payload.id });
+    const targetUser = isSelfUpdate ? reqUser : await userModel.find({ id: payload.id });
     if (!targetUser) throw new Error('Usuário não encontrado!');
 
     if (!UserPolicy.canUpdate(reqUser, targetUser)) throw new Error('Você não tem autorização para atualizar este usuário!');
@@ -68,7 +68,7 @@ class UserServices {
       sanitizePayload.role = payload.role;
     }
 
-    return await UserModel.update(sanitizePayload);
+    return await userModel.update(sanitizePayload);
   }
 
   async delete({ findId, reqUser }: { findId: string, reqUser: User }) {
@@ -76,14 +76,14 @@ class UserServices {
 
     const isSelfDelete = reqUser.id === findId;
 
-    const targetUser = isSelfDelete ? reqUser : await UserModel.find({ id: findId });
+    const targetUser = isSelfDelete ? reqUser : await userModel.find({ id: findId });
     if (!targetUser) throw new Error('Usuário não encontrado!');
 
     if (!UserPolicy.canDelete(reqUser, targetUser)) throw new Error('Você não tem autorização para remover este usuário!');
 
-    return await UserModel.delete(findId);
+    return await userModel.delete(findId);
   }
 }
 
 
-export const UserService = new UserServices();
+export const userService = new UserService();
