@@ -3,8 +3,10 @@ import { faker } from '@faker-js/faker';
 import { createUserTypes } from '../types/user.types';
 import { hash } from 'bcrypt';
 import { UserCreateInput } from '../generated/models';
+import { Roles } from '../generated/client';
 
 const userDb = db.user;
+const shortUrlDb = db.shortUrl;
 
 const masterUser: createUserTypes = {
   email: "anna@doe.com.br",
@@ -14,6 +16,8 @@ const masterUser: createUserTypes = {
   role: "MASTER"
 }
 
+const allRoles: Roles[] = ['FREEBIE', 'SUBSCRIBER', 'ADMIN', 'MASTER'];
+
 class Seed {
   generateUsers() {
     const user: createUserTypes = {
@@ -21,7 +25,7 @@ class Seed {
       lastName: faker.person.lastName(),
       email: faker.internet.email(),
       password: faker.internet.password(),
-      role: 'FREEBIE'
+      role: allRoles[Math.floor(Math.random() * allRoles.length)]
     }
     return user;
   }
@@ -36,7 +40,11 @@ class Seed {
 
   async seedUsers() {
     try {
-      await userDb.deleteMany();
+      await Promise.all([
+        userDb.deleteMany(),
+        shortUrlDb.deleteMany(),
+      ]);
+
       const arrUsers = faker.helpers.multiple(this.generateUsers, { count: 50 })
       if (!arrUsers || arrUsers.length < 1) return null;
 
