@@ -7,7 +7,7 @@ dotenv.config();
 const PORT = process.env.PORT ?? 3000;
 
 //Seeding users
-// seedUsers.seedUsers();
+// seedUsers.seedUsers().then(r => seedUsers.seedShortUrl());
 
 console.clear();
 
