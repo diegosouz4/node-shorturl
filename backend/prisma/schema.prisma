@@ -17,7 +17,7 @@ model ShortUrl {
   status urlStatus     @default(UNACTIVE)
   logs   ShortUrlLog[]
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   createdAt DateTime @default(now())

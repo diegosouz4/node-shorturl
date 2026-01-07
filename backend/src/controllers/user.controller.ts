@@ -8,9 +8,9 @@ import type { AuthTokenData } from '../middlewares/ensureAuth.middleware';
 
 class UserController {
   async create(req: Request, res: Response) {
-    const { email, firstName, lastName, password, role } = req.body as createUserTypes;
-
     try {
+      const { email, firstName, lastName, password, role } = req.body as createUserTypes;
+
       const user = await userService.create({ email, firstName, lastName, password, role });
       return successResponse({ res, message: 'Novo usuario freebie criado!', statusCode: 201, data: user });
     } catch (err) {
@@ -35,9 +35,10 @@ class UserController {
 
   async find(req: Request, res: Response) {
     const jwtUser = (req as AuthTokenData).user;
-    const { id } = req.params;
 
     try {
+      const { id } = req.params;
+
       const user = await userService.find({ findId: id, reqUser: jwtUser });
       return successResponse({ res, message: 'Sucesso ao procurar o usuario', statusCode: 200, data: user });
     } catch (err) {
@@ -49,12 +50,12 @@ class UserController {
 
   async update(req: Request, res: Response) {
     const jwtUser = (req as AuthTokenData).user;
-    const { id } = req.params;
-    const payload = req.body as updateUserTypes;
-
-    payload.id = id;
 
     try {
+      const { id } = req.params;
+      const payload = req.body as updateUserTypes;
+      payload.id = id;
+
       await userService.update({ payload, reqUser: jwtUser });
       return successResponse({ res, message: 'Sucesso ao procurar o usuario', statusCode: 200 });
     } catch (err) {
@@ -66,13 +67,14 @@ class UserController {
 
   async delete(req: Request, res: Response) {
     const jwtUser = (req as AuthTokenData).user;
-    const { id } = req.params;
 
     try {
+      const { id } = req.params;
+
       const user = await userService.delete({ findId: id, reqUser: jwtUser });
       return successResponse({ res, message: 'Sucesso ao deletar o usuario', statusCode: 200 });
     } catch (err) {
-      
+
       let details = handleErrorDetails(err);
       return errorResponse({ res, message: 'Erro ao deletar o usuario', statusCode: 500, details });
     }
