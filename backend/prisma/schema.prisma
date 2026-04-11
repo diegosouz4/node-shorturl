@@ -41,12 +41,13 @@ model ShortUrlLog {
 }
 
 model User {
-  id        String @id @default(uuid())
-  email     String @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
   firstName String
   lastName  String
   password  String
-  role      Roles  @default(FREEBIE)
+  role      Roles      @default(FREEBIE)
+  status    UserStatus @default(ACTIVE)
 
   urls ShortUrl[]
 
@@ -61,6 +62,12 @@ enum Roles {
   SUBSCRIBER
   ADMIN
   MASTER
+}
+
+enum UserStatus {
+  ACTIVE
+  UNACTIVE
+  DELETED
 }
 
 enum urlStatus {

@@ -38,8 +38,9 @@ class UserController {
 
     try {
       const { id } = req.params;
+      const payloadId = Array.isArray(id) ? id[0] : id;
 
-      const user = await userService.find({ findId: id, reqUser: jwtUser });
+      const user = await userService.find({ findId: payloadId, reqUser: jwtUser });
       return successResponse({ res, message: 'Sucesso ao procurar o usuario', statusCode: 200, data: user });
     } catch (err) {
 
@@ -54,7 +55,7 @@ class UserController {
     try {
       const { id } = req.params;
       const payload = req.body as updateUserTypes;
-      payload.id = id;
+      payload.id = Array.isArray(id) ? id[0] : id;;
 
       await userService.update({ payload, reqUser: jwtUser });
       return successResponse({ res, message: 'Sucesso ao procurar o usuario', statusCode: 200 });
@@ -65,13 +66,29 @@ class UserController {
     }
   }
 
+  async reactivate(req: Request, res: Response){
+    const jwtUser = (req as AuthTokenData).user;
+
+    try{
+      const {id} = req.params;
+      const payloadId = Array.isArray(id) ? id[0] : id;
+
+      const result = await userService.reactivate({findId: payloadId, reqUser: jwtUser});
+      return successResponse({res, message: "Sucesso ao reativar o usuário", statusCode: 200});
+    }catch(err:unknown){
+      let details = handleErrorDetails(err);
+      return errorResponse({res, message: "Erro ao reativar o usuário", details, statusCode: 500});
+    }
+  }
+
   async delete(req: Request, res: Response) {
     const jwtUser = (req as AuthTokenData).user;
 
     try {
       const { id } = req.params;
+      const payloadId = Array.isArray(id) ? id[0] : id;
 
-      const user = await userService.delete({ findId: id, reqUser: jwtUser });
+      const user = await userService.delete({ findId: payloadId, reqUser: jwtUser });
       return successResponse({ res, message: 'Sucesso ao deletar o usuario', statusCode: 200 });
     } catch (err) {
 

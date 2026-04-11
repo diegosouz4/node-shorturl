@@ -68,7 +68,24 @@ class UserService {
       sanitizePayload.role = payload.role;
     }
 
+    if (payload.status && payload.status !== targetUser.status) {
+      if (!UserPolicy.canAssignStatus(reqUser, targetUser)) throw new Error('Você não tem autorização para alterar o status deste usuário!');
+      sanitizePayload.status = payload.status;
+    }
+
     return await userModel.update(sanitizePayload);
+  }
+
+  async reactivate({ findId, reqUser }: { findId: string, reqUser: User }) {
+    userId.parse({ id: findId });
+
+    const isSelfReactivation = findId === reqUser.id;
+
+    const targetUser = isSelfReactivation ? reqUser : await userModel.find({ id: findId });
+    if(!targetUser) throw new Error('Usuário não encontrado!');
+
+    if(!UserPolicy.canAssignStatus(reqUser, targetUser)) throw new Error('Você não tem autorização para remover este usuário!');
+    return await userModel.reactivate(findId);
   }
 
   async delete({ findId, reqUser }: { findId: string, reqUser: User }) {

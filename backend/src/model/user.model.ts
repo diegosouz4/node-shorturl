@@ -20,8 +20,12 @@ class UserModel {
     return userDb.findMany({ take: 20, omit: { password: true } });
   }
 
+  reactivate(id: string) {
+    return userDb.update({ where: { id }, data: { status: 'ACTIVE' } });
+  }
+
   delete(id: string) {
-    return userDb.delete({ where: { id } });
+    return userDb.update({ where: { id }, data: { status: 'DELETED' } });
   }
 
   update(updateUser: updateUserTypes) {

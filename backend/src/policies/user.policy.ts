@@ -23,6 +23,11 @@ class Policy {
     return true;
   }
 
+  canAssignStatus(requester: baseUser, target: baseUser){
+    if (requester.id === target.id) return false; 
+    return this.canAssingRole(requester, target);
+  }
+
   canChangeRole(requester: baseUser, target: baseUser) {
     return this.canAssingRole(requester, target);
   }

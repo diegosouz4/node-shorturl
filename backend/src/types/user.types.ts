@@ -1,16 +1,18 @@
 import { z } from 'zod'
-import { Roles } from '../generated/enums';
+import { Roles, UserStatus } from '../generated/enums';
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!_+/?\-])[A-Za-z\d@!_+/?\-]{8,16}$/;
 
 export const allowedRoles = Object.values(Roles)
+export const allowedUserStatus = Object.values(UserStatus);
 
 export const createUserParams = z.object({
   email: z.email("Email e obrigatorio!"),
   firstName: z.string("Campo obrigatorio").min(4, "Tamanho de nome invalido"),
   lastName: z.string("Campo obrigatorio").min(3, "Sobrenome tem que ter mais de 3 letras"),
   password: z.string("Campo obrigatorio").regex(passwordRegex, { error: "Uma senha fraca foi informada!" }),
-  role: z.enum(allowedRoles, { error: "Valor passado e invalido!" })
+  role: z.enum(allowedRoles, { error: "Valor passado e invalido!" }),
+  status: z.enum(allowedUserStatus, { error: "Valor passado e invalido!" }).optional(),
 });
 
 export const updateUserParams = z.object({
@@ -19,7 +21,8 @@ export const updateUserParams = z.object({
   firstName: z.string("Campo obrigatorio").min(4, "Tamanho de nome invalido").optional(),
   lastName: z.string("Campo obrigatorio").min(3, "Sobrenome tem que ter mais de 3 letras").optional(),
   password: z.string("Campo obrigatorio").regex(passwordRegex, { error: "Uma senha fraca foi informada!" }).optional(),
-  role: z.enum(allowedRoles, { error: "Valor passado e invalido!" }).optional()
+  role: z.enum(allowedRoles, { error: "Valor passado e invalido!" }).optional(),
+  status: z.enum(allowedUserStatus, { error: "Valor passado e invalido!" }).optional(),
 });
 
 export const userId = z.object({
