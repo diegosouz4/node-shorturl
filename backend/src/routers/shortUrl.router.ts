@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { shortUrlController } from '../controllers/shortUrl.controler';
+import { shortUrlController } from '../controllers/shortUrl.controller';
 import { EnsureAuthMiddleware } from '../middlewares/ensureAuth.middleware';
 
 const router = Router();

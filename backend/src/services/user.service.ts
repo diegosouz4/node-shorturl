@@ -39,9 +39,9 @@ class UserService {
 
     if (!UserPolicy.canView(reqUser, targetUser)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
 
-    const { id, email, firstName, lastName, createAt, updateAt, role } = targetUser;
+    const { id, email, firstName, lastName, createdAt, updatedAt, role } = targetUser;
 
-    const sanitize = { id, email, firstName, lastName, createAt, updateAt, role };
+    const sanitize = { id, email, firstName, lastName, createdAt, updatedAt, role };
     return sanitize;
   }
 
