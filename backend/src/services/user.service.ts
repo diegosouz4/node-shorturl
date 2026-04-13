@@ -3,8 +3,13 @@ import { jwtUserParams } from "../types/session.types";
 import { createUserParams, type createUserTypes, updateUserParams, type updateUserTypes, userId } from "../types/user.types";
 import { handleUserPass } from "../utils/handleUserPass.util";
 import { UserPolicy } from "../policies/user.policy";
-import type { User } from '../generated/client';
+import type { Roles, User } from '../generated/client';
+import { cursorPaginationsParams, cursorParams, decodeCursor, encodeCursor, cursorObjTypes, cursorObj } from "../types/cursorPagination.types";
 
+import { UserWhereInput } from '../generated/models';
+
+import { config } from '../config/system.config';
+const defaultPaginationsParams = config.pagination;
 class UserService {
   async create(userQuery: createUserTypes) {
     createUserParams.parse({ ...userQuery });
@@ -21,12 +26,29 @@ class UserService {
     return create;
   }
 
-  async list(reqUser: User) {
+  async list(reqUser: User, pagination: cursorPaginationsParams) {
     jwtUserParams.parse(reqUser);
+    const valitedCursor = cursorParams.parse(pagination);
+
+    let nextCursorObj: cursorObjTypes | undefined = undefined;
+    let where: UserWhereInput | undefined = undefined;
 
     if (!UserPolicy.canList(reqUser)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
 
-    return await userModel.list();
+    if (valitedCursor.cursor) nextCursorObj = cursorObj.parse(decodeCursor(valitedCursor.cursor));
+
+    if (reqUser.role === 'ADMIN') where = { role: { in: ['FREEBIE', 'SUBSCRIBER'] } };
+
+    const limit = valitedCursor.limit ?? defaultPaginationsParams.limit;
+    const result = await userModel.list({ limit, cursor: nextCursorObj, where });
+
+    const nextCursor = result.length <= limit ? null : result[limit];
+
+    return {
+      data: result.slice(0, limit),
+      hasNext: !!nextCursor,
+      nextCursor: !nextCursor ? null : encodeCursor({ id: nextCursor.id, createdAt: nextCursor.createdAt }),
+    };
   }
 
   async find({ findId, reqUser }: { findId: string, reqUser: User }) {
@@ -82,9 +104,9 @@ class UserService {
     const isSelfReactivation = findId === reqUser.id;
 
     const targetUser = isSelfReactivation ? reqUser : await userModel.find({ id: findId });
-    if(!targetUser) throw new Error('Usuário não encontrado!');
+    if (!targetUser) throw new Error('Usuário não encontrado!');
 
-    if(!UserPolicy.canAssignStatus(reqUser, targetUser)) throw new Error('Você não tem autorização para remover este usuário!');
+    if (!UserPolicy.canAssignStatus(reqUser, targetUser)) throw new Error('Você não tem autorização para remover este usuário!');
     return await userModel.reactivate(findId);
   }
 

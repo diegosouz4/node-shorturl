@@ -5,6 +5,7 @@ import { handleErrorDetails } from '../utils/handleErrorDetails.util';
 import type { Request, Response } from 'express';
 import type { createUserTypes, updateUserTypes } from '../types/user.types';
 import type { AuthTokenData } from '../middlewares/ensureAuth.middleware';
+import { cursorPaginationsParams } from '../types/cursorPagination.types';
 
 class UserController {
   async create(req: Request, res: Response) {
@@ -22,9 +23,10 @@ class UserController {
 
   async list(req: Request, res: Response) {
     const jwtUser = (req as AuthTokenData).user;
+    const pagination = req.query as cursorPaginationsParams;
 
     try {
-      const users = await userService.list(jwtUser);
+      const users = await userService.list(jwtUser, pagination);
       return successResponse({ res, message: 'Sucesso ao listar usuarios', statusCode: 200, data: users });
     } catch (err) {
 
@@ -66,18 +68,18 @@ class UserController {
     }
   }
 
-  async reactivate(req: Request, res: Response){
+  async reactivate(req: Request, res: Response) {
     const jwtUser = (req as AuthTokenData).user;
 
-    try{
-      const {id} = req.params;
+    try {
+      const { id } = req.params;
       const payloadId = Array.isArray(id) ? id[0] : id;
 
-      const result = await userService.reactivate({findId: payloadId, reqUser: jwtUser});
-      return successResponse({res, message: "Sucesso ao reativar o usuário", statusCode: 200});
-    }catch(err:unknown){
+      const result = await userService.reactivate({ findId: payloadId, reqUser: jwtUser });
+      return successResponse({ res, message: "Sucesso ao reativar o usuário", statusCode: 200 });
+    } catch (err: unknown) {
       let details = handleErrorDetails(err);
-      return errorResponse({res, message: "Erro ao reativar o usuário", details, statusCode: 500});
+      return errorResponse({ res, message: "Erro ao reativar o usuário", details, statusCode: 500 });
     }
   }
 

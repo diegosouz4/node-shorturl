@@ -1,7 +1,12 @@
 import { db } from '../config/db.config';
+import { config } from '../config/system.config';
+import { cursorObjTypes, cursorPaginationsParams } from '../types/cursorPagination.types';
 import { createUserTypes, updateUserTypes } from '../types/user.types';
 
+import { UserWhereInput } from '../generated/models';
+
 const userDb = db.user;
+const defaultPaginationsParams = config.pagination;
 
 class UserModel {
   create(newUser: createUserTypes) {
@@ -16,8 +21,20 @@ class UserModel {
     return userDb.findFirst({ where: { OR: [{ email }, { id }] } })
   }
 
-  list() {
-    return userDb.findMany({ take: 20, omit: { password: true } });
+  list({ cursor, limit, where }: { limit: number, cursor?: cursorObjTypes, where?: UserWhereInput }) {
+    const take = limit ? Number(limit) : defaultPaginationsParams.limit;
+
+    return userDb.findMany({
+      take: take + 1,
+      skip: !cursor || !cursor.id ? 0 : 1,
+      where,
+      orderBy: { createdAt: 'desc' },
+      omit: { password: true },
+      cursor: !cursor || !cursor.id ? undefined : {
+        id: cursor.id
+      }
+    });
+
   }
 
   reactivate(id: string) {
