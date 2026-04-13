@@ -256,4 +256,83 @@ describe('user.policy', () => {
       expect(UserPolicy.canList(subscriber)).toBe(false);
     });
   });
+
+  describe('canAssignStatus', () => {
+    it('should return false when user tries to assign status to themselves', () => {
+      const user = createUser('MASTER', 'same-id');
+      const target = createUser('MASTER', 'same-id');
+
+      expect(UserPolicy.canAssignStatus(user, target)).toBe(false);
+    });
+
+    it('should return false when FREEBIE tries to assign status', () => {
+      const freebie = createUser('FREEBIE', 'freebie-1');
+      const target = createUser('SUBSCRIBER', 'sub-1');
+
+      expect(UserPolicy.canAssignStatus(freebie, target)).toBe(false);
+    });
+
+    it('should return false when SUBSCRIBER tries to assign status', () => {
+      const subscriber = createUser('SUBSCRIBER', 'sub-1');
+      const target = createUser('FREEBIE', 'freebie-1');
+
+      expect(UserPolicy.canAssignStatus(subscriber, target)).toBe(false);
+    });
+
+    it('should return false when ADMIN tries to assign status to ADMIN user', () => {
+      const admin1 = createUser('ADMIN', 'admin-1');
+      const admin2 = createUser('ADMIN', 'admin-2');
+
+      expect(UserPolicy.canAssignStatus(admin1, admin2)).toBe(false);
+    });
+
+    it('should return false when ADMIN tries to assign status to MASTER user', () => {
+      const admin = createUser('ADMIN', 'admin-1');
+      const master = createUser('MASTER', 'master-1');
+
+      expect(UserPolicy.canAssignStatus(admin, master)).toBe(false);
+    });
+
+    it('should return true when ADMIN assigns status to FREEBIE user', () => {
+      const admin = createUser('ADMIN', 'admin-1');
+      const freebie = createUser('FREEBIE', 'freebie-1');
+
+      expect(UserPolicy.canAssignStatus(admin, freebie)).toBe(true);
+    });
+
+    it('should return true when ADMIN assigns status to SUBSCRIBER user', () => {
+      const admin = createUser('ADMIN', 'admin-1');
+      const subscriber = createUser('SUBSCRIBER', 'sub-1');
+
+      expect(UserPolicy.canAssignStatus(admin, subscriber)).toBe(true);
+    });
+
+    it('should return false when MASTER tries to assign status to MASTER user', () => {
+      const master1 = createUser('MASTER', 'master-1');
+      const master2 = createUser('MASTER', 'master-2');
+
+      expect(UserPolicy.canAssignStatus(master1, master2)).toBe(false);
+    });
+
+    it('should return true when MASTER assigns status to FREEBIE user', () => {
+      const master = createUser('MASTER', 'master-1');
+      const freebie = createUser('FREEBIE', 'freebie-1');
+
+      expect(UserPolicy.canAssignStatus(master, freebie)).toBe(true);
+    });
+
+    it('should return true when MASTER assigns status to SUBSCRIBER user', () => {
+      const master = createUser('MASTER', 'master-1');
+      const subscriber = createUser('SUBSCRIBER', 'sub-1');
+
+      expect(UserPolicy.canAssignStatus(master, subscriber)).toBe(true);
+    });
+
+    it('should return true when MASTER assigns status to ADMIN user', () => {
+      const master = createUser('MASTER', 'master-1');
+      const admin = createUser('ADMIN', 'admin-1');
+
+      expect(UserPolicy.canAssignStatus(master, admin)).toBe(true);
+    });
+  });
 });
