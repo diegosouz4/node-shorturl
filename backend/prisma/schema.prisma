@@ -82,4 +82,5 @@ enum logsStatus {
   DELETED
   REPLACED
   FAILED
+  ACCESSED
 }
