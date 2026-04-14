@@ -20,8 +20,8 @@ class SessionController {
     } catch (err: unknown) {
       console.log("[SessionController | login] Error: ", err);
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Error ao logar!', statusCode: 500, details })
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Error ao logar!', statusCode: statusCode ?? 500, details: message })
     }
   }
 
@@ -35,8 +35,8 @@ class SessionController {
     } catch (err: unknown) {
       console.log("[SessionController | addUser] Error: ", err);
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Error ao criar usuário!', statusCode: 500, details })
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Error ao criar usuário!', statusCode: statusCode ?? 500, details: message })
     }
   }
 }

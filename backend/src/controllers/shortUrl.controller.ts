@@ -18,8 +18,8 @@ class ShortUrlController {
     } catch (err: unknown) {
       console.log("[shortUrlController | create] Error: ", err);
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'erro ao criar shorted!', statusCode: 500, details });
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'erro ao criar shorted!', statusCode: statusCode ?? 500, details: message });
     }
   }
 
@@ -35,8 +35,8 @@ class ShortUrlController {
     } catch (err: unknown) {
       console.log("[shortUrlController | find] Error: ", err);
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Erro ao encontrar a url', statusCode: 500, details })
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao encontrar a url', statusCode: statusCode ?? 500, details: message });
     }
   }
 
@@ -52,8 +52,8 @@ class ShortUrlController {
     } catch (err: unknown) {
       console.log("[shortUrlController | delete] Error: ", err);
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Erro ao deletar a url', statusCode: 500, details })
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao deletar a url', statusCode: statusCode ?? 500, details: message });
     }
   }
 
@@ -68,8 +68,8 @@ class ShortUrlController {
     } catch (err: unknown) {
       console.log("[shortUrlController | update] Error: ", err);
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Erro ao atualizar a url', statusCode: 500, details })
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao atualizar a url', statusCode: statusCode ?? 500, details: message });
     }
   }
 
@@ -82,8 +82,8 @@ class ShortUrlController {
       return successResponse({ res, message: 'Sucesso ao listar urls!', data });
     } catch (err: unknown) {
       console.log("[shortUrlController | list] Error: ", err);
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Erro ao listar as urls', statusCode: 500, details })
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao listar as urls', statusCode: statusCode ?? 500, details: message });
     }
   }
 }

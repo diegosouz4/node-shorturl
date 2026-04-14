@@ -16,8 +16,8 @@ class UserController {
       return successResponse({ res, message: 'Novo usuario freebie criado!', statusCode: 201, data: user });
     } catch (err) {
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Erro ao criar usuario', statusCode: 500, details });
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao criar usuario', statusCode: statusCode ?? 500, details: message });
     }
   }
 
@@ -30,8 +30,8 @@ class UserController {
       return successResponse({ res, message: 'Sucesso ao listar usuarios', statusCode: 200, data: users });
     } catch (err) {
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Erro ao listar usuarios', statusCode: 500, details });
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao listar usuarios', statusCode: statusCode ?? 500, details: message });
     }
   }
 
@@ -46,8 +46,8 @@ class UserController {
       return successResponse({ res, message: 'Sucesso ao procurar o usuario', statusCode: 200, data: user });
     } catch (err) {
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Erro ao procurar o usuario', statusCode: 500, details });
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao procurar o usuario', statusCode: statusCode ?? 500, details: message });
     }
   }
 
@@ -63,8 +63,8 @@ class UserController {
       return successResponse({ res, message: 'Sucesso ao procurar o usuario', statusCode: 200 });
     } catch (err) {
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Erro ao procurar o usuario', statusCode: 500, details });
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao procurar o usuario', statusCode: statusCode ?? 500, details: message });
     }
   }
 
@@ -78,8 +78,8 @@ class UserController {
       const result = await userService.reactivate({ findId: payloadId, reqUser: jwtUser });
       return successResponse({ res, message: "Sucesso ao reativar o usuário", statusCode: 200 });
     } catch (err: unknown) {
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: "Erro ao reativar o usuário", details, statusCode: 500 });
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: "Erro ao reativar o usuário", statusCode: statusCode ?? 500, details: message });
     }
   }
 
@@ -94,8 +94,8 @@ class UserController {
       return successResponse({ res, message: 'Sucesso ao deletar o usuario', statusCode: 200 });
     } catch (err) {
 
-      let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Erro ao deletar o usuario', statusCode: 500, details });
+      const { message, statusCode } = handleErrorDetails(err);
+      return errorResponse({ res, message: 'Erro ao deletar o usuario', statusCode: statusCode ?? 500, details: message });
     }
   }
 }
