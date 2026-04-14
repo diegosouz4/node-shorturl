@@ -42,7 +42,7 @@ class UserService {
     const limit = valitedCursor.limit ?? defaultPaginationsParams.limit;
     const result = await userModel.list({ limit, cursor: nextCursorObj, where });
 
-    const nextCursor = result.length <= limit ? null : result[limit];
+    const nextCursor = result.length <= limit ? null : result[limit - 1];
 
     return {
       data: result.slice(0, limit),
