@@ -6,6 +6,12 @@ import { userId } from "../types/user.types";
 import { shortUrlPolicies } from "../policies/shortUrl.policy";
 import { type createShortURLType, createShortURL, type findShortURLType, findShortUrl, type updateShortURLType, updateShortUrl, listShortUrl, type listShortURLType } from "../types/shortUrl.types";
 
+import { ShortUrlWhereInput } from '../generated/models';
+import { config } from '../config/system.config';
+import { cursorObj, cursorObjTypes, cursorPaginationsParams, cursorParams, decodeCursor, encodeCursor } from "../types/cursorPagination.types";
+
+const defaultPaginationsParams = config.pagination;
+
 class ShortURLServices {
   async create({ payload, reqUser }: { payload: createShortURLType, reqUser: User }) {
     createShortURL.parse({ ...payload });
@@ -85,21 +91,39 @@ class ShortURLServices {
     return updated;
   }
 
-  async list({ reqUser, filterBy }: { reqUser: User, filterBy: listShortURLType }) {
+  async list({ reqUser, filterBy, reqPagination }: { reqUser: User, filterBy?: listShortURLType, reqPagination: cursorPaginationsParams }) {
     userId.parse({ id: reqUser.id });
     listShortUrl.parse(filterBy);
 
-    if (!filterBy.userId) {
-      return await shortUrlModel.list({ userId: reqUser.id });
-    }
+    const pagination = cursorParams.parse(reqPagination);
+    const limit = pagination.limit ?? defaultPaginationsParams.limit
 
-    const target = await userModel.find({ id: filterBy.userId });
+    const isSelfSearch = !filterBy?.userId || filterBy?.userId === reqUser.id;
+    const target = isSelfSearch ? reqUser : await userModel.find({ id: filterBy.userId });
+
+    let nextCursorObj: cursorObjTypes | undefined = undefined;
+    if (pagination.cursor) nextCursorObj = cursorObj.parse(decodeCursor(pagination.cursor));
+
+    console.log("nextCursorObj: ", nextCursorObj);
+
     if (!target || target === null) throw new Error("Usuário não encontrado!");
-
     if (!shortUrlPolicies.canList({ requester: reqUser, target })) throw new Error('Você não tem autorização para executar esse tipo de ação!');
 
-    const list = await shortUrlModel.list({ userId: target.id });
-    return list;
+    const where: ShortUrlWhereInput = {
+      userId: isSelfSearch ? reqUser.id : filterBy?.userId,
+    };
+
+    const list = await shortUrlModel.list({ limit, where, cursor: nextCursorObj });
+    const nextCursor = list.length <= limit ? null : list[limit - 1];
+
+    console.log("Lista: ", list);
+    console.log("nextCursor: ", nextCursor);
+
+    return {
+      data: list.slice(0, limit),
+      hasNext: !!nextCursor,
+      nextCursor: !nextCursor ? null : encodeCursor({ id: nextCursor.id, createdAt: nextCursor.createdAt }),
+    };
   }
 }
 

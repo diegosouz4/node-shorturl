@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { urlStatus } from '../generated/client';
+import { cursorPaginationsParams } from './cursorPagination.types';
 
 const allowedUrlStatus = Object.values(urlStatus);
 
@@ -44,6 +45,10 @@ export type createShortURLType = z.infer<typeof createShortURL>;
 export type findShortURLType = z.infer<typeof findShortUrl>;
 export type updateShortURLType = z.infer<typeof updateShortUrl>;
 export type listShortURLType = z.infer<typeof listShortUrl>;
+
+export type shortCursorPagination = cursorPaginationsParams & {
+  userId?: string;
+}
 
 export type insertShortUrl = createShortURLType & {
   shortUrl: string;

@@ -4,6 +4,8 @@ import { handleErrorDetails } from '../utils/handleErrorDetails.util';
 
 import type { Request, Response } from 'express';
 import type { AuthTokenData } from '../middlewares/ensureAuth.middleware';
+import { cursorPaginationsParams } from '../types/cursorPagination.types';
+import { shortCursorPagination } from '../types/shortUrl.types';
 
 class ShortUrlController {
   async create(req: Request, res: Response) {
@@ -17,7 +19,7 @@ class ShortUrlController {
       console.log("[shortUrlController | create] Error: ", err);
 
       let details = handleErrorDetails(err);
-      return errorResponse({ res, message: 'erro ao criar shorted!', statusCode: 500, details })
+      return errorResponse({ res, message: 'erro ao criar shorted!', statusCode: 500, details });
     }
   }
 
@@ -26,7 +28,9 @@ class ShortUrlController {
       const { shortUrl } = req.params;
       const reqUser = (req as AuthTokenData).user;
 
-      const data = await shortURLServices.find({ payload: { shortUrl }, reqUser });
+      const sanitizeURL = Array.isArray(shortUrl) ? shortUrl[0] : shortUrl;
+
+      const data = await shortURLServices.find({ payload: { shortUrl: sanitizeURL }, reqUser });
       return successResponse({ res, message: 'Url encontrada!', data });
     } catch (err: unknown) {
       console.log("[shortUrlController | find] Error: ", err);
@@ -41,7 +45,9 @@ class ShortUrlController {
       const { shortUrl } = req.params;
       const reqUser = (req as AuthTokenData).user;
 
-      const data = await shortURLServices.remove({ payload: { shortUrl }, reqUser });
+      const sanitizeURL = Array.isArray(shortUrl) ? shortUrl[0] : shortUrl;
+
+      const data = await shortURLServices.remove({ payload: { shortUrl: sanitizeURL }, reqUser });
       return successResponse({ res, message: 'Url deletada!', statusCode: 204 });
     } catch (err: unknown) {
       console.log("[shortUrlController | delete] Error: ", err);
@@ -70,9 +76,9 @@ class ShortUrlController {
   async list(req: Request, res: Response) {
     try {
       const reqUser = (req as AuthTokenData).user;
-      const filterBy = req.query;
+      const { cursor, limit, userId } = req.query as shortCursorPagination;
 
-      const data = await shortURLServices.list({ reqUser, filterBy });
+      const data = await shortURLServices.list({ reqUser, filterBy: { userId }, reqPagination: { cursor, limit } });
       return successResponse({ res, message: 'Sucesso ao listar urls!', data });
     } catch (err: unknown) {
       console.log("[shortUrlController | list] Error: ", err);

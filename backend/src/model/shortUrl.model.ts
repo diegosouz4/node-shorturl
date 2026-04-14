@@ -1,7 +1,11 @@
 import { db } from '../config/db.config';
+import { config } from '../config/system.config';
+import type { ShortUrlWhereInput } from '../generated/models';
+import type { cursorObjTypes } from '../types/cursorPagination.types';
 import type { findShortURLType, insertShortUrl, insertUpdateShortUrl } from '../types/shortUrl.types';
 
 const dbShortUrl = db.shortUrl;
+const defaultPaginationsParams = config.pagination;
 
 class ShortUrlModel {
   async create({ payload, userId }: { payload: insertShortUrl, userId: string }) {
@@ -18,8 +22,18 @@ class ShortUrlModel {
     return dbShortUrl.delete({ where: { id: urlId } });
   }
 
-  async list({ userId }: { userId: string }) {
-    return dbShortUrl.findMany({ where: { userId }, take: 20 });
+  async list({ limit = defaultPaginationsParams.limit, where, cursor }: { limit: number, cursor?: cursorObjTypes, where?: ShortUrlWhereInput }) {
+    return dbShortUrl.findMany({
+      take: limit + 1,
+      where,
+      skip: !cursor || !cursor.id ? 0 : 1,
+      orderBy: [
+        { createdAt: 'asc' }
+      ],
+      cursor: !cursor ? undefined : {
+        id: cursor.id ?? undefined
+      }
+    });
   }
 
   async update(payload: insertUpdateShortUrl) {
