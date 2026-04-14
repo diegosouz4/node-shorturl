@@ -7,9 +7,12 @@ import { db } from '../config/db.config';
 import type { User } from '../generated/client';
 
 import jwt from 'jsonwebtoken';
+import { logger } from '../utils/logger.util';
 import { config } from '../config/system.config';
-const { secret } = config.jwt;
+import { handleErrorDetails } from '../utils/handleErrorDetails.util';
+import { HTTP_STATUS } from '../utils/httpsStatusCode.utils';
 
+const { secret } = config.jwt;
 const userDb = db.user;
 
 export type JWTUSER = {
@@ -23,6 +26,7 @@ export interface AuthTokenData extends Request {
 
 class Auth {
   ensureAuth() {
+    const log = logger.createLogger('EnsureAuthMiddleware', 'ensureAuth');
     return async (req: Request, res: Response, next: NextFunction) => {
       const { headers } = req;
 
@@ -42,13 +46,9 @@ class Auth {
         (req as AuthTokenData).user = { ...user };
 
       } catch (err: unknown) {
-        let details = '';
-        if (err instanceof z.ZodError) {
-          details = err.issues.map(e => e.message).join(', ');
-        } else if (err instanceof Error) {
-          details = err.message;
-        }
-        return errorResponse({ res, message: "Acesso não autorizado!", statusCode: 401, details });
+        const { message, statusCode } = handleErrorDetails(err);
+        log.error({ err }, message);
+        return errorResponse({ res, message: "Acesso não autorizado!", statusCode: statusCode ?? HTTP_STATUS.UNAUTHORIZED, details: message });
       }
 
       return next();
@@ -56,18 +56,17 @@ class Auth {
   }
 
   ensureRole(allowedRoles: Roles[] = ['ADMIN', 'MASTER']) {
-    return (req: Request, res: Response, next: NextFunction) => {
+    const log = logger.createLogger('EnsureAuthMiddleware', 'ensureRole');
 
+    return (req: Request, res: Response, next: NextFunction) => {
       try {
         const jwtUser = (req as AuthTokenData).user;
         if (!jwtUser || !jwtUser.role) throw new Error('Erro ao validar usuario!');
         if (!allowedRoles.includes(jwtUser.role)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
-
       } catch (err: unknown) {
-
-        let details = '';
-        if (err instanceof Error) details = err.message;
-        return errorResponse({ res, message: "Acesso nao autorizado!", statusCode: 401, details });
+        const { message, statusCode } = handleErrorDetails(err);
+        log.error({ err, allowedRoles, reqUser: (req as AuthTokenData).user }, message);
+        return errorResponse({ res, message: "Acesso nao autorizado!", statusCode: statusCode ?? HTTP_STATUS.UNAUTHORIZED, details: message });
       }
 
       return next();

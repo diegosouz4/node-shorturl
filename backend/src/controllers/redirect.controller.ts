@@ -4,6 +4,7 @@ import { handleErrorDetails } from "../utils/handleErrorDetails.util";
 import { redirectService } from "../services/redirect.service";
 import { reqUserDetails } from "../middlewares/default.middleware";
 import { logger } from "../utils/logger.util";
+import { HTTP_STATUS } from "../utils/httpsStatusCode.utils";
 
 class RedirectController {
   async redirect(req: reqUserDetails, res: Response) {
@@ -16,7 +17,7 @@ class RedirectController {
       const payload = Array.isArray(shortCode) ? shortCode[0] : shortCode;
       const redirectUrl = await redirectService.redirect({ shortCode: payload, reqDetails: { userAgent, userIp, accessDate } });
 
-      return res.status(301).redirect(redirectUrl);
+      return res.status(HTTP_STATUS.FOUND).redirect(redirectUrl);
     } catch (err: unknown) {
 
       const { message, statusCode } = handleErrorDetails(err);

@@ -1,4 +1,5 @@
-import { Response } from 'express';
+import type { Response } from 'express';
+import type { HttpStatus } from '../utils/httpsStatusCode.utils';
 
 export interface PaginationMeta {
   path: string;
@@ -13,12 +14,12 @@ export interface SuccessResponseTypes<T> {
   message: string;
   data?: T;
   pagination?: PaginationMeta;
-  statusCode?: number;
+  statusCode?: HttpStatus;
 }
 
 export interface ErrorResponseTypes {
   res: Response;
   message: string;
   details?: any;
-  statusCode?: number;
+  statusCode?: HttpStatus;
 }

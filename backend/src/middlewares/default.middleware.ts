@@ -2,6 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 import { reqDetailsParams } from '../types/redirect.types';
 
 export type reqUserDetails = Request & reqDetailsParams;
+import { logger } from '../utils/logger.util';
+import { HTTP_STATUS } from '../utils/httpsStatusCode.utils';
 
 class BaseMiddleware {
   setCors() {
@@ -37,6 +39,7 @@ class BaseMiddleware {
   }
 
   setMorgan() {
+    const log = logger.createLogger('HTTP');
     return (req: reqUserDetails, res: Response, next: NextFunction) => {
       const { hostname, method, path, ip, protocol } = req;
       const { statusCode } = res;
@@ -49,7 +52,7 @@ class BaseMiddleware {
 
       const userAgent = req.headers['user-agent'];
 
-      console.info(`ACCESS: ${date} - ${method} ${protocol}://${hostname}${path} ${statusCode} - ${userIp}`);
+      log.info({ method, protocol, hostname, path, statusCode, userIp, userAgent }, `ACCESS: ${date} - ${method} ${protocol}://${hostname}${path} ${statusCode} - ${userIp}`)
 
       if (userAgent) req.userAgent = userAgent;
       if (date) req.accessDate = date;
@@ -61,7 +64,7 @@ class BaseMiddleware {
 
   handle404() {
     return (req: Request, res: Response, next: NextFunction) => {
-      res.status(404).send("Sorry, can't find that");
+      res.status(HTTP_STATUS.NOT_FOUND).send("Sorry, can't find that");
     }
   }
 }

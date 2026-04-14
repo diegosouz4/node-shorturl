@@ -1,7 +1,9 @@
-export class HttpError extends Error {
-  public statusCode: number;
+import { HttpStatus } from "./httpsStatusCode.utils";
 
-  constructor(message: string, statusCode: number ) {
+export class HttpError extends Error {
+  public statusCode: HttpStatus;
+
+  constructor(message: string, statusCode: HttpStatus ) {
     super(message);
     this.statusCode = statusCode;
     this.name = "HttpError";
