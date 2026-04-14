@@ -6,9 +6,12 @@ import type { Request, Response } from 'express';
 import type { createUserTypes, updateUserTypes } from '../types/user.types';
 import type { AuthTokenData } from '../middlewares/ensureAuth.middleware';
 import { cursorPaginationsParams } from '../types/cursorPagination.types';
+import { logger } from '../utils/logger.util';
 
 class UserController {
   async create(req: Request, res: Response) {
+    const log = logger.createLogger('UserController', 'create');
+
     try {
       const { email, firstName, lastName, password, role } = req.body as createUserTypes;
 
@@ -17,11 +20,15 @@ class UserController {
     } catch (err) {
 
       const { message, statusCode } = handleErrorDetails(err);
+      const { email, firstName, lastName, password, role } = req.body as createUserTypes;
+
+      log.error({ err, payload: { email, firstName, lastName, password, role } }, message);
       return errorResponse({ res, message: 'Erro ao criar usuario', statusCode: statusCode ?? 500, details: message });
     }
   }
 
   async list(req: Request, res: Response) {
+    const log = logger.createLogger('UserController', 'list');
     const jwtUser = (req as AuthTokenData).user;
     const pagination = req.query as cursorPaginationsParams;
 
@@ -31,11 +38,13 @@ class UserController {
     } catch (err) {
 
       const { message, statusCode } = handleErrorDetails(err);
+      log.error({ err, reqUser: jwtUser, pagination }, message);
       return errorResponse({ res, message: 'Erro ao listar usuarios', statusCode: statusCode ?? 500, details: message });
     }
   }
 
   async find(req: Request, res: Response) {
+    const log = logger.createLogger('UserController', 'find');
     const jwtUser = (req as AuthTokenData).user;
 
     try {
@@ -47,11 +56,13 @@ class UserController {
     } catch (err) {
 
       const { message, statusCode } = handleErrorDetails(err);
+      log.error({ err, reqUser: jwtUser, targetId: req.params.id }, message);
       return errorResponse({ res, message: 'Erro ao procurar o usuario', statusCode: statusCode ?? 500, details: message });
     }
   }
 
   async update(req: Request, res: Response) {
+    const log = logger.createLogger('UserController', 'update');
     const jwtUser = (req as AuthTokenData).user;
 
     try {
@@ -64,11 +75,15 @@ class UserController {
     } catch (err) {
 
       const { message, statusCode } = handleErrorDetails(err);
+
+      const payload = req.body as updateUserTypes;
+      log.error({ err, reqUser: jwtUser, payload }, message);
       return errorResponse({ res, message: 'Erro ao procurar o usuario', statusCode: statusCode ?? 500, details: message });
     }
   }
 
   async reactivate(req: Request, res: Response) {
+    const log = logger.createLogger('UserController', 'reactivate');
     const jwtUser = (req as AuthTokenData).user;
 
     try {
@@ -79,11 +94,13 @@ class UserController {
       return successResponse({ res, message: "Sucesso ao reativar o usuário", statusCode: 200 });
     } catch (err: unknown) {
       const { message, statusCode } = handleErrorDetails(err);
+      log.error({ err, reqUser: jwtUser, targetId: req.params.id }, message);
       return errorResponse({ res, message: "Erro ao reativar o usuário", statusCode: statusCode ?? 500, details: message });
     }
   }
 
   async delete(req: Request, res: Response) {
+    const log = logger.createLogger('UserController', 'delete');
     const jwtUser = (req as AuthTokenData).user;
 
     try {
@@ -95,6 +112,7 @@ class UserController {
     } catch (err) {
 
       const { message, statusCode } = handleErrorDetails(err);
+      log.error({ err, reqUser: jwtUser, targetId: req.params.id }, message);
       return errorResponse({ res, message: 'Erro ao deletar o usuario', statusCode: statusCode ?? 500, details: message });
     }
   }

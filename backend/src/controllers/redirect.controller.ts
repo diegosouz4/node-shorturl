@@ -3,9 +3,12 @@ import { errorResponse } from "../utils/handlerResponse.util";
 import { handleErrorDetails } from "../utils/handleErrorDetails.util";
 import { redirectService } from "../services/redirect.service";
 import { reqUserDetails } from "../middlewares/default.middleware";
+import { logger } from "../utils/logger.util";
 
 class RedirectController {
   async redirect(req: reqUserDetails, res: Response) {
+    const log = logger.createLogger('RedirectController', 'redirect');
+
     try {
       const { shortCode } = req.params;
       const { userAgent, userIp, accessDate } = req;
@@ -15,9 +18,10 @@ class RedirectController {
 
       return res.status(301).redirect(redirectUrl);
     } catch (err: unknown) {
-      console.log("[RedirectController | redirect] Error: ", err);
 
       const { message, statusCode } = handleErrorDetails(err);
+      log.error({ err, shortURL: req.params.shortCode, details: { userAgent: req.userAgent, userIp: req.userIp, accessDate: req.accessDate } }, message);
+
       return errorResponse({ res, message: 'erro ao redirecionar URL!', statusCode, details: message });
     }
   }
