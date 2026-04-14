@@ -42,21 +42,31 @@ class BaseMiddleware {
     const log = logger.createLogger('HTTP');
     return (req: reqUserDetails, res: Response, next: NextFunction) => {
       const { hostname, method, path, ip, protocol } = req;
-      const { statusCode } = res;
 
       const awsRequestForwarded = Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'];
       const awsRequestRealip = Array.isArray(req.headers['x-real-ip']) ? req.headers['x-real-ip'][0] : req.headers['x-real-ip'];
 
       const userIp = awsRequestForwarded || awsRequestRealip || ip;
       const date = new Date().toUTCString();
-
       const userAgent = req.headers['user-agent'];
-
-      log.info({ method, protocol, hostname, path, statusCode, userIp, userAgent }, `ACCESS: ${date} - ${method} ${protocol}://${hostname}${path} ${statusCode} - ${userIp}`)
 
       if (userAgent) req.userAgent = userAgent;
       if (date) req.accessDate = date;
       if (userIp) req.userIp = userIp;
+
+      res.on('finish', () => {
+        const { statusCode } = res;
+
+        log.info({
+          method,
+          protocol,
+          hostname,
+          path,
+          statusCode,
+          userIp,
+          userAgent
+        }, `${method} ${path} ${statusCode}`);
+      });
 
       next();
     }

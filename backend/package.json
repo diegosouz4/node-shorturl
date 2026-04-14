@@ -1,8 +1,8 @@
 {
-  "name": "backend",
+  "name": "node-shorturl-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API de encurtamento de URLs com Node.js, Express e Prisma, projetada com arquitetura modular, autenticação JWT, autorização baseada em papéis, logging estruturado e práticas modernas de desenvolvimento backend",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
     "dev": "npx prisma generate && ts-node-dev --respawn --transpile-only src/server.ts",
@@ -11,8 +11,12 @@
     "test:watch": "jest --watch"
   },
   "keywords": [],
-  "author": "",
+  "author": "Diego Oliveira <https://github.com/diegosouz4>",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diegosouz4/node-shorturl"
+  },
   "type": "commonjs",
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
@@ -20,7 +24,6 @@
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^5.2.1",
-    "express-pino-logger": "^7.0.0",
     "jsonwebtoken": "^9.0.3",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
