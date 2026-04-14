@@ -104,7 +104,6 @@ class ShortURLServices {
     let nextCursorObj: cursorObjTypes | undefined = undefined;
     if (pagination.cursor) nextCursorObj = cursorObj.parse(decodeCursor(pagination.cursor));
 
-    console.log("nextCursorObj: ", nextCursorObj);
 
     if (!target || target === null) throw new Error("Usuário não encontrado!");
     if (!shortUrlPolicies.canList({ requester: reqUser, target })) throw new Error('Você não tem autorização para executar esse tipo de ação!');
@@ -115,9 +114,6 @@ class ShortURLServices {
 
     const list = await shortUrlModel.list({ limit, where, cursor: nextCursorObj });
     const nextCursor = list.length <= limit ? null : list[limit - 1];
-
-    console.log("Lista: ", list);
-    console.log("nextCursor: ", nextCursor);
 
     return {
       data: list.slice(0, limit),

@@ -1,4 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
+import { reqDetailsParams } from '../types/redirect.types';
+
+export type reqUserDetails = Request & reqDetailsParams;
 
 class BaseMiddleware {
   setCors() {
@@ -34,7 +37,7 @@ class BaseMiddleware {
   }
 
   setMorgan() {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: reqUserDetails, res: Response, next: NextFunction) => {
       const { hostname, method, path, ip, protocol } = req;
       const { statusCode } = res;
 
@@ -44,7 +47,13 @@ class BaseMiddleware {
       const userIp = awsRequestForwarded || awsRequestRealip || ip;
       const date = new Date().toUTCString();
 
+      const userAgent = req.headers['user-agent'];
+
       console.info(`ACCESS: ${date} - ${method} ${protocol}://${hostname}${path} ${statusCode} - ${userIp}`);
+
+      if (userAgent) req.userAgent = userAgent;
+      if (date) req.accessDate = date;
+      if (userIp) req.userIp = userIp;
 
       next();
     }

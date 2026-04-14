@@ -41,6 +41,10 @@ class ShortUrlModel {
     return dbShortUrl.update({ where: { id: payload.id }, data: { ...payload, expiresAt: deadline } });
   }
 
+  async incrementClicks({ id }: { id: string }) {
+    return dbShortUrl.update({ where: { id }, data: { clicks: { increment: 1 } } });
+  }
+
   async countByUser({ id }: { id: string }) {
     return dbShortUrl.count({ where: { userId: id } });
   }
