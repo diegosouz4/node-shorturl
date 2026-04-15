@@ -1,4 +1,5 @@
 import { baseShortUrlPolicy, redirectPolicy } from "../../src/policies/redirect.policy";
+import { HTTP_STATUS } from "../../src/utils/httpsStatusCode.utils";
 
 describe('redirect.policy', () => {
   describe('canRedirect', () => {
@@ -6,8 +7,7 @@ describe('redirect.policy', () => {
       const targetUrl: baseShortUrlPolicy | null = null;
 
       const result = redirectPolicy.canRedirect({ targetUrl });
-
-      expect(result).toEqual({ canRedirect: false, code: 404 });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.NOT_FOUND });
     });
 
     it('should return canRedirect false and code 410 when URL status is EXPIRED', () => {
@@ -22,8 +22,7 @@ describe('redirect.policy', () => {
       };
 
       const result = redirectPolicy.canRedirect({ targetUrl });
-
-      expect(result).toEqual({ canRedirect: false, code: 410 });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.GONE });
     });
 
     it('should return canRedirect false and code 403 when URL status is UNACTIVE', () => {
@@ -38,8 +37,7 @@ describe('redirect.policy', () => {
       };
 
       const result = redirectPolicy.canRedirect({ targetUrl });
-
-      expect(result).toEqual({ canRedirect: false, code: 403 });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return canRedirect true when URL status is ACTIVE and expiresAt is in the future', () => {
@@ -53,9 +51,8 @@ describe('redirect.policy', () => {
         expiresAt: new Date('2027-01-07T05:37:25.740Z'),
       };
 
-      const result = redirectPolicy.canRedirect({ targetUrl });
-
-      expect(result.canRedirect).toBe(true);
+      const { isValid } = redirectPolicy.canRedirect({ targetUrl });
+      expect(isValid).toBe(true);
     });
 
     it('should return canRedirect true when URL status is ACTIVE and expiresAt is null', () => {
@@ -69,12 +66,11 @@ describe('redirect.policy', () => {
         expiresAt: null,
       };
 
-      const result = redirectPolicy.canRedirect({ targetUrl });
-
-      expect(result.canRedirect).toBe(true);
+      const { isValid } = redirectPolicy.canRedirect({ targetUrl });
+      expect(isValid).toBe(true);
     });
 
-    it('should return canRedirect false and code 410 when URL expiresAt is in the past', () => {
+    it('should return canRedirect false and code 410 when URL expiresAt is in the past (fixed date)', () => {
       const targetUrl: baseShortUrlPolicy = {
         id: 'abc',
         originalUrl: "https://teste.com.br",
@@ -86,11 +82,10 @@ describe('redirect.policy', () => {
       };
 
       const result = redirectPolicy.canRedirect({ targetUrl });
-
-      expect(result).toEqual({ canRedirect: false, code: 410 });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.GONE });
     });
 
-    it('should return canRedirect false and code 410 when URL expiresAt is in the past', () => {
+    it('should return canRedirect false and code 410 when URL expiresAt is in the past (dynamic now)', () => {
       const now = new Date(Date.now() - 1000);
       const targetUrl: baseShortUrlPolicy = {
         id: 'abc',
@@ -103,8 +98,7 @@ describe('redirect.policy', () => {
       };
 
       const result = redirectPolicy.canRedirect({ targetUrl });
-
-      expect(result).toEqual({ canRedirect: false, code: 410 });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.GONE });
     });
   });
 });
