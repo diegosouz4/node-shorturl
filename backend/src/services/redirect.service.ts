@@ -10,18 +10,18 @@ class RedirectService {
     redirectValidate.parse({ shortCode });
 
     const targetUrl = await shortUrlModel.find({ shortUrl: shortCode });
-    if (!targetUrl) throw new HttpError("Url não encontrada!", HTTP_STATUS.NOT_FOUND);
+    if (!targetUrl) throw new HttpError("URL not found!", HTTP_STATUS.NOT_FOUND);
 
     const { isValid, statusCode } = redirectPolicy.canRedirect({ targetUrl });
 
     if (!isValid) {
       switch (statusCode) {
         case HTTP_STATUS.GONE:
-          throw new HttpError("Url selecionada está expirada!", HTTP_STATUS.GONE);
+          throw new HttpError("Selected URL has expired!", HTTP_STATUS.GONE);
         case HTTP_STATUS.NOT_FOUND:
-          throw new HttpError("Url selecionada não existe!", HTTP_STATUS.NOT_FOUND);
+          throw new HttpError("Selected URL does not exist!", HTTP_STATUS.NOT_FOUND);
         case HTTP_STATUS.FORBIDDEN:
-          throw new HttpError("Url selecionada está desativada!", HTTP_STATUS.FORBIDDEN);
+          throw new HttpError("Selected URL is disabled!", HTTP_STATUS.FORBIDDEN);
       }
     }
 

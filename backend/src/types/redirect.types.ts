@@ -7,7 +7,7 @@ export type reqDetailsParams = {
 }
 
 export const redirectValidate = z.object({
-  shortCode: z.string("Codigo enviado e invalido")
+  shortCode: z.string("Short code is required!"),
 });
 
 export type redirectRequest = z.infer<typeof redirectValidate>;

@@ -11,6 +11,7 @@ import { logger } from '../utils/logger.util';
 import { config } from '../config/system.config';
 import { handleErrorDetails } from '../utils/handleErrorDetails.util';
 import { HTTP_STATUS } from '../utils/httpsStatusCode.utils';
+import { HttpError } from '../utils/httpError.util';
 
 const { secret } = config.jwt;
 const userDb = db.user;
@@ -31,24 +32,24 @@ class Auth {
       const { headers } = req;
 
       try {
-        if (!headers || !headers.authorization) throw new Error("Headers nao enviado");
+        if (!headers || !headers.authorization) throw new Error("Authorization header not sent");
 
         const [, token] = headers.authorization.split(' ');
-        if (!token) throw new Error("Token nao enviado");
+        if (!token) throw new Error("Token not provided");
 
         jwtValidate.parse({ token });
         const decoded = jwt.verify(token, secret) as JWTUSER;
 
         const user = await userDb.findUnique({ where: { id: decoded.id } });
-        if (!user) throw new Error('Usuário inválido');
-        if (decoded.role !== user.role) throw new Error("É preciso fazer o login novamente!");
+        if (!user) throw new HttpError('Invalid user', HTTP_STATUS.UNAUTHORIZED);
+        if (decoded.role !== user.role) throw new HttpError("Please log in again!", HTTP_STATUS.UNAUTHORIZED);
 
         (req as AuthTokenData).user = { ...user };
 
       } catch (err: unknown) {
         const { message, statusCode } = handleErrorDetails(err);
         log.error({ err }, message);
-        return errorResponse({ res, message: "Acesso não autorizado!", statusCode: statusCode ?? HTTP_STATUS.UNAUTHORIZED, details: message });
+        return errorResponse({ res, message: "Unauthorized access!", statusCode: statusCode ?? HTTP_STATUS.UNAUTHORIZED, details: message });
       }
 
       return next();
@@ -61,12 +62,12 @@ class Auth {
     return (req: Request, res: Response, next: NextFunction) => {
       try {
         const jwtUser = (req as AuthTokenData).user;
-        if (!jwtUser || !jwtUser.role) throw new Error('Erro ao validar usuario!');
-        if (!allowedRoles.includes(jwtUser.role)) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+        if (!jwtUser || !jwtUser.role) throw new HttpError('Failed to validate user!', HTTP_STATUS.UNAUTHORIZED);
+        if (!allowedRoles.includes(jwtUser.role)) throw new HttpError('You do not have authorization to perform this action!', HTTP_STATUS.UNAUTHORIZED);
       } catch (err: unknown) {
         const { message, statusCode } = handleErrorDetails(err);
         log.error({ err, allowedRoles, reqUser: (req as AuthTokenData).user }, message);
-        return errorResponse({ res, message: "Acesso nao autorizado!", statusCode: statusCode ?? HTTP_STATUS.UNAUTHORIZED, details: message });
+        return errorResponse({ res, message: "Unauthorized access!", statusCode: statusCode ?? HTTP_STATUS.UNAUTHORIZED, details: message });
       }
 
       return next();

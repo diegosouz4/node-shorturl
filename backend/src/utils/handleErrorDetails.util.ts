@@ -12,18 +12,18 @@ export const handleErrorDetails = (err: unknown) => {
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     switch (err.code) {
       case 'P2002':
-        return { message: 'Registro duplicado. Valor já existente.', statusCode: HTTP_STATUS.CONFLICT };
+        return { message: 'Duplicate record. Value already exists.', statusCode: HTTP_STATUS.CONFLICT };
       case 'P2003':
-        return { message: 'Violação de relacionamento. Verifique as referências.', statusCode: HTTP_STATUS.BAD_REQUEST };
+        return { message: 'Relationship violation. Check the references.', statusCode: HTTP_STATUS.BAD_REQUEST };
       case 'P2025':
-        return { message: 'Registro não encontrado.', statusCode: HTTP_STATUS.NOT_FOUND };
+        return { message: 'Record not found.', statusCode: HTTP_STATUS.NOT_FOUND };
       default:
-        return { message: 'Erro ao processar operação no banco de dados.', statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR };
+        return { message: 'Error processing database operation.', statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR };
     }
   }
 
   if (err instanceof Prisma.PrismaClientUnknownRequestError) return {
-    message: 'Erro inesperado no banco de dados.',
+    message: 'Unexpected error in the database.',
     statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR
   };
 
@@ -31,5 +31,5 @@ export const handleErrorDetails = (err: unknown) => {
 
   if (err instanceof Error) return { message: err.message, statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR };
 
-  return { message: 'Erro inesperado.', statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR };
+  return { message: 'Unexpected error.', statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR };
 }

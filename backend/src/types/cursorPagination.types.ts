@@ -12,13 +12,13 @@ export type cursorPaginations<T> = {
 }
 
 export const cursorParams = z.object({
-  limit: z.coerce.number("Limite informado é inválido").min(1, { error: "Limite não pode ser menor que 1" }).max(50, { error: "Limite não pode ser maior que 50" }).default(limitDefault).optional(),
-  cursor: z.string("Cursor informado é inválido").optional(),
+  limit: z.coerce.number("Invalid limit provided").min(1, { error: "Limit cannot be less than 1" }).max(50, { error: "Limit cannot be greater than 50" }).default(limitDefault).optional(),
+  cursor: z.string("Invalid cursor provided").optional(),
 });
 
 export const cursorObj = z.object({
-  id: z.uuid("Id informado é inválido"),
-  createdAt: z.coerce.date("Data informada é inválido")
+  id: z.uuid("Invalid ID provided"),
+  createdAt: z.coerce.date("Invalid date provided")
 });
 
 export type cursorPaginationsParams = z.infer<typeof cursorParams>;

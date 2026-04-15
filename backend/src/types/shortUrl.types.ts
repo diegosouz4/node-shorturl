@@ -6,39 +6,39 @@ const allowedUrlStatus = Object.values(UrlStatus);
 
 export const createShortURL = z.object(
   {
-    originalUrl: z.url({ protocol: /^https$/, hostname: z.regexes.domain }),
-    expiresAt: z.iso.datetime({ local: true, error: "Data passada é inválida!" }).optional().refine((value) => {
+    originalUrl: z.url({ protocol: /^https$/, hostname: z.regexes.domain, error: "Invalid URL!" },),
+    expiresAt: z.iso.datetime({ local: true, error: "Invalid date passed!" }).optional().refine((value) => {
       if (!value) return true;
 
       const expiredDate = new Date(value);
       const now = new Date();
 
       return expiredDate > now;
-    }, { error: 'A data de expiração deve ser maior que a data atual' })
+    }, { error: 'Expiration date must be greater than the current date' })
   }
 );
 
 export const findShortUrl = z.object({
-  shortUrl: z.string({ error: "Url passada é inválida!" }).optional(),
-  urlId: z.uuid({ error: "Id passado é inválido!" }).optional(),
-}).refine(({ shortUrl, urlId }) => shortUrl || urlId, { error: "Informe shortUrl ou urlId para consulta" });
+  shortUrl: z.string({ error: "Invalid URL passed!" }).optional(),
+  urlId: z.uuid({ error: "Invalid ID passed!" }).optional(),
+}).refine(({ shortUrl, urlId }) => shortUrl || urlId, { error: "Please provide either shortUrl or urlId for the query" });
 
 export const updateShortUrl = z.object({
-  shortUrl: z.string({ error: "Url passada é inválida!" }).optional(),
-  status: z.enum(allowedUrlStatus, { error: 'Valor infromado é inválido!' }).optional(),
-  originalUrl: z.url({ protocol: /^https$/, hostname: z.regexes.domain, error: "Url passada é inválida!" },).optional(),
-  expiresAt: z.iso.datetime({ local: true, error: "Data passada é inválida!" }).optional().refine((value) => {
+  shortUrl: z.string({ error: "Invalid URL passed!" }).optional(),
+  status: z.enum(allowedUrlStatus, { error: 'Invalid value provided!' }).optional(),
+  originalUrl: z.url({ protocol: /^https$/, hostname: z.regexes.domain, error: "Invalid URL passed!" },).optional(),
+  expiresAt: z.iso.datetime({ local: true, error: "Invalid date passed!" }).optional().refine((value) => {
     if (!value) return true;
 
     const expiredDate = new Date(value);
     const now = new Date();
 
     return expiredDate > now;
-  }, { error: 'A data de expiração deve ser maior que a data atual' })
-}).refine(({ shortUrl }) => shortUrl, { error: "Informe shortUrl para consulta" });
+  }, { error: 'Expiration date must be greater than the current date' })
+}).refine(({ shortUrl }) => shortUrl, { error: "Please provide shortUrl for the query" });
 
 export const listShortUrl = z.object({
-  userId: z.uuid({ error: "id passado é inválida! " }).optional()
+  userId: z.uuid({ error: "Invalid ID passed!" }).optional()
 });
 
 export type createShortURLType = z.infer<typeof createShortURL>;

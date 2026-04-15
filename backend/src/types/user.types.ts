@@ -7,26 +7,26 @@ export const allowedRoles = Object.values(Roles)
 export const allowedUserStatus = Object.values(UserStatus);
 
 export const createUserParams = z.object({
-  email: z.email("Email e obrigatorio!"),
-  firstName: z.string("Campo obrigatorio").min(4, "Tamanho de nome invalido"),
-  lastName: z.string("Campo obrigatorio").min(3, "Sobrenome tem que ter mais de 3 letras"),
-  password: z.string("Campo obrigatorio").regex(passwordRegex, { error: "Uma senha fraca foi informada!" }),
-  role: z.enum(allowedRoles, { error: "Valor passado e invalido!" }),
-  status: z.enum(allowedUserStatus, { error: "Valor passado e invalido!" }).optional(),
+  email: z.email("Email is required!"),
+  firstName: z.string("First name is required").min(4, "Invalid first name length"),
+  lastName: z.string("Last name is required").min(3, "Last name must be at least 3 characters long"),
+  password: z.string("Password is required").regex(passwordRegex, { error: "A weak password was provided!" }),
+  role: z.enum(allowedRoles, { error: "Invalid value passed!" }),
+  status: z.enum(allowedUserStatus, { error: "Invalid value passed!" }).optional(),
 });
 
 export const updateUserParams = z.object({
-  id: z.uuid("Id de usuario invalido!"),
-  email: z.email("Email e obrigatorio!").optional(),
-  firstName: z.string("Campo obrigatorio").min(4, "Tamanho de nome invalido").optional(),
-  lastName: z.string("Campo obrigatorio").min(3, "Sobrenome tem que ter mais de 3 letras").optional(),
-  password: z.string("Campo obrigatorio").regex(passwordRegex, { error: "Uma senha fraca foi informada!" }).optional(),
-  role: z.enum(allowedRoles, { error: "Valor passado e invalido!" }).optional(),
-  status: z.enum(allowedUserStatus, { error: "Valor passado e invalido!" }).optional(),
+  id: z.uuid("Invalid user ID!"),
+  email: z.email("Email is required!").optional(),
+  firstName: z.string("First name is required").min(4, "Invalid first name length").optional(),
+  lastName: z.string("Last name is required").min(3, "Last name must be at least 3 characters long").optional(),
+  password: z.string("Password is required").regex(passwordRegex, { error: "A weak password was provided!" }).optional(),
+  role: z.enum(allowedRoles, { error: "Invalid value passed!" }).optional(),
+  status: z.enum(allowedUserStatus, { error: "Invalid value passed!" }).optional(),
 });
 
 export const userId = z.object({
-  id: z.uuid("Id de usuario invalido!"),
+  id: z.uuid("Invalid user ID!"),
 })
 
 export type createUserTypes = z.infer<typeof createUserParams>;

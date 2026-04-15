@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { allowedRoles } from './user.types';
 
 export const loginParams = z.object({
-  email: z.email("Email obrigatorio"),
-  password: z.string("Senha nao foi informada")
+  email: z.email("Email is required!"),
+  password: z.string("Password is required")
 });
 
 export const jwtValidate = z.object({
@@ -11,8 +11,8 @@ export const jwtValidate = z.object({
 })
 
 export const jwtUserParams = z.object({
-  id: z.uuid('Usuario invalido'),
-  role: z.enum(allowedRoles, { error: "Valor passado e invalido!" })
+  id: z.uuid("Invalid user ID!"),
+  role: z.enum(allowedRoles, { error: "Invalid value passed!" })
 })
 
 export type logintypes = z.infer<typeof loginParams>;

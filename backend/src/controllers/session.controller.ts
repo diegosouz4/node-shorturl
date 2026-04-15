@@ -19,12 +19,12 @@ class SessionController {
 
       res.cookie('token', response.token, { secure: true, maxAge: 86400 * 1000 });
 
-      return successResponse({ res, message: 'Sucesso ao logar!', data: response });
+      return successResponse({ res, message: 'Login successful!', data: response });
     } catch (err: unknown) {
-      log.error({ err, email: (user as logintypes)?.email }, 'Error durante o login');
+      log.error({ err, email: (user as logintypes)?.email }, 'Error during login');
 
       const { message, statusCode } = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Error durante o login!', statusCode: statusCode ?? HTTP_STATUS.INTERNAL_SERVER_ERROR, details: message })
+      return errorResponse({ res, message: 'Error during login!', statusCode: statusCode ?? HTTP_STATUS.INTERNAL_SERVER_ERROR, details: message })
     }
   }
 
@@ -35,12 +35,12 @@ class SessionController {
 
     try {
       const newUser = await sessionService.addUser({ payload, reqUser: jwtUser });
-      return successResponse({ res, message: 'Novo usuario criado!', statusCode: HTTP_STATUS.CREATED, data: newUser });
+      return successResponse({ res, message: 'New user created!', statusCode: HTTP_STATUS.CREATED, data: newUser });
     } catch (err: unknown) {
-      log.error({ err, email: payload?.email, requestedBy: jwtUser?.id }, 'Error ao criar usuário');
+      log.error({ err, email: payload?.email, requestedBy: jwtUser?.id }, 'Error creating user');
 
       const { message, statusCode } = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Error ao criar usuário!', statusCode: statusCode ?? HTTP_STATUS.INTERNAL_SERVER_ERROR, details: message })
+      return errorResponse({ res, message: 'Error creating user!', statusCode: statusCode ?? HTTP_STATUS.INTERNAL_SERVER_ERROR, details: message })
     }
   }
 }

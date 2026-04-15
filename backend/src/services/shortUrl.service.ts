@@ -21,7 +21,7 @@ class ShortURLServices {
 
     const totalCreated = await shortUrlModel.countByUser({ id: reqUser.id });
     const { isValid, statusCode } = shortUrlPolicies.canCreate({ requester: { ...reqUser, totalCreated } });
-    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
+    if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     let shortUrl = '';
 
@@ -35,7 +35,7 @@ class ShortURLServices {
       };
     }
 
-    if (!shortUrl) throw new HttpError('Falha ao gerar shortURL após múltiplas tentativas', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    if (!shortUrl) throw new HttpError('Failed to generate shortURL after multiple attempts', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     const createShortUrl = await shortUrlModel.create({ userId: reqUser.id, payload: { ...payload, shortUrl } });
 
     return createShortUrl;
@@ -50,10 +50,10 @@ class ShortURLServices {
     if (payload.urlId) sanitize.urlId = payload.urlId.trim();
 
     const target = await shortUrlModel.find({ ...sanitize });
-    if (!target) throw new HttpError("Url não foi encontrada!", HTTP_STATUS.NOT_FOUND);
+    if (!target) throw new HttpError('Short URL not found!', HTTP_STATUS.NOT_FOUND);
 
     const { isValid, statusCode } = shortUrlPolicies.canView({ requester: reqUser, target });
-    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
+    if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     return target;
   }
@@ -67,12 +67,12 @@ class ShortURLServices {
     if (payload.urlId) sanitize.urlId = payload.urlId.trim();
 
     const target = await shortUrlModel.find({ ...sanitize });
-    if (!target) throw new HttpError("Url não foi encontrada!", HTTP_STATUS.NOT_FOUND);
+    if (!target) throw new HttpError('Short URL not found!', HTTP_STATUS.NOT_FOUND);
 
-    if (target.status === 'ACTIVE') throw new HttpError('URLs ativas não podem ser removidas. Desative antes de excluir.', HTTP_STATUS.UNAUTHORIZED);
+    if (target.status === 'ACTIVE') throw new HttpError('Active URLs cannot be removed. Deactivate before deleting.', HTTP_STATUS.UNAUTHORIZED);
 
     const { isValid, statusCode } = shortUrlPolicies.canDelete({ requester: reqUser, target });
-    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
+    if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     const del = await shortUrlModel.remove({ urlId: target.id });
     return del;
@@ -89,10 +89,10 @@ class ShortURLServices {
     if (payload.status) sanitize.status = payload.status;
 
     const target = await shortUrlModel.find({ shortUrl: payload.shortUrl });
-    if (!target || target === null) throw new HttpError("Url não foi encontrada!", HTTP_STATUS.NOT_FOUND);
+    if (!target || target === null) throw new HttpError('Short URL not found!', HTTP_STATUS.NOT_FOUND);
 
     const { isValid, statusCode } = shortUrlPolicies.canUpdate({ requester: reqUser, target, update: payload });
-    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
+    if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     const updated = await shortUrlModel.update({ ...sanitize, id: target.id });
     return updated;
@@ -111,10 +111,10 @@ class ShortURLServices {
     let nextCursorObj: cursorObjTypes | undefined = undefined;
     if (pagination.cursor) nextCursorObj = cursorObj.parse(decodeCursor(pagination.cursor));
 
-    if (!target || target === null) throw new HttpError("Usuário não encontrado!", HTTP_STATUS.NOT_FOUND);
+    if (!target || target === null) throw new HttpError("User not found!", HTTP_STATUS.NOT_FOUND);
 
     const { isValid, statusCode } = shortUrlPolicies.canList({ requester: reqUser, target });
-    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
+    if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     const where: ShortUrlWhereInput = {
       userId: isSelfSearch ? reqUser.id : filterBy?.userId,

@@ -23,7 +23,7 @@ class RedirectController {
       const { message, statusCode } = handleErrorDetails(err);
       log.error({ err, shortURL: req.params.shortCode, details: { userAgent: req.userAgent, userIp: req.userIp, accessDate: req.accessDate } }, message);
 
-      return errorResponse({ res, message: 'erro ao redirecionar URL!', statusCode, details: message });
+      return errorResponse({ res, message: "Error redirecting URL", statusCode, details: message });
     }
   }
 }
