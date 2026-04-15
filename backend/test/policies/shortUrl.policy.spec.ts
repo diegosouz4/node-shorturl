@@ -1,4 +1,4 @@
-import { shortUrlPolicies } from "../../src/policies/shortUrl.policy";
+import { shortUrlPolicy } from "../../src/policies/shortUrl.policy";
 import { HTTP_STATUS } from "../../src/utils/httpsStatusCode.utils";
 import { Roles } from "../../src/generated/enums";
 
@@ -19,33 +19,33 @@ describe('shortUrl.policy', () => {
 
   describe('canCreate', () => {
     it('should return isValid as true and statusCode as 200 when the requester.role is SUBSCRIBER', () => {
-      const result = shortUrlPolicies.canCreate({ requester: { id: 'abc', role: 'SUBSCRIBER', totalCreated: 0 } })
+      const result = shortUrlPolicy.canCreate({ requester: { id: 'abc', role: 'SUBSCRIBER', totalCreated: 0 } })
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
     it('should return isValid as true and statusCode as 200 when the requester.role is ADMIN', () => {
-      const result = shortUrlPolicies.canCreate({ requester: { id: 'abc', role: 'ADMIN', totalCreated: 0 } })
+      const result = shortUrlPolicy.canCreate({ requester: { id: 'abc', role: 'ADMIN', totalCreated: 0 } })
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
     it('should return isValid as true and statusCode as 200 when the requester.role is MASTER', () => {
-      const result = shortUrlPolicies.canCreate({ requester: { id: 'abc', role: 'MASTER', totalCreated: 0 } })
+      const result = shortUrlPolicy.canCreate({ requester: { id: 'abc', role: 'MASTER', totalCreated: 0 } })
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
     it('should return isValid as true and statusCode as 200 when the requester.role is FREEBIE and the totalCreated is lower than 3', () => {
-      const result = shortUrlPolicies.canCreate({ requester: { id: 'abc', role: 'FREEBIE', totalCreated: 0 } })
+      const result = shortUrlPolicy.canCreate({ requester: { id: 'abc', role: 'FREEBIE', totalCreated: 0 } })
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
-    it('should return isValid as false and statusCode as 401 when the requester.role is FREEBIE but the totalCreated is equal to 3', () => {
-      const result = shortUrlPolicies.canCreate({ requester: { id: 'abc', role: 'FREEBIE', totalCreated: 3 } })
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+    it('should return isValid as false and statusCode as 403 when the requester.role is FREEBIE but the totalCreated is equal to 3', () => {
+      const result = shortUrlPolicy.canCreate({ requester: { id: 'abc', role: 'FREEBIE', totalCreated: 3 } })
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
-    it('should return isValid as false and statusCode as 401 when the requester.role is FREEBIE but the totalCreated is bigger than 3', () => {
-      const result = shortUrlPolicies.canCreate({ requester: { id: 'abc', role: 'FREEBIE', totalCreated: 4 } })
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+    it('should return isValid as false and statusCode as 403 when the requester.role is FREEBIE but the totalCreated is bigger than 3', () => {
+      const result = shortUrlPolicy.canCreate({ requester: { id: 'abc', role: 'FREEBIE', totalCreated: 4 } })
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 
@@ -54,7 +54,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('SUBSCRIBER', 'user-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'user-1');
 
-      const result = shortUrlPolicies.canView({ requester, target });
+      const result = shortUrlPolicy.canView({ requester, target });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -62,7 +62,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1');
 
-      const result = shortUrlPolicies.canView({ requester, target });
+      const result = shortUrlPolicy.canView({ requester, target });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -70,7 +70,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createFindUrlPlusUser('ADMIN', 'admin-2');
 
-      const result = shortUrlPolicies.canView({ requester, target });
+      const result = shortUrlPolicy.canView({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -78,7 +78,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createFindUrlPlusUser('MASTER', 'master-1');
 
-      const result = shortUrlPolicies.canView({ requester, target });
+      const result = shortUrlPolicy.canView({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -86,7 +86,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('MASTER', 'master-1');
       const target = createFindUrlPlusUser('ADMIN', 'admin-1');
 
-      const result = shortUrlPolicies.canView({ requester, target });
+      const result = shortUrlPolicy.canView({ requester, target });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -94,7 +94,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('MASTER', 'master-1');
       const target = createFindUrlPlusUser('MASTER', 'master-2');
 
-      const result = shortUrlPolicies.canView({ requester, target });
+      const result = shortUrlPolicy.canView({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -102,7 +102,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('FREEBIE', 'freebie-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1');
 
-      const result = shortUrlPolicies.canView({ requester, target });
+      const result = shortUrlPolicy.canView({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -110,7 +110,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('SUBSCRIBER', 'sub-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-2');
 
-      const result = shortUrlPolicies.canView({ requester, target });
+      const result = shortUrlPolicy.canView({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
   });
@@ -120,7 +120,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'ACTIVE');
 
-      const result = shortUrlPolicies.canDelete({ requester, target });
+      const result = shortUrlPolicy.canDelete({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -128,7 +128,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'UNACTIVE');
 
-      const result = shortUrlPolicies.canDelete({ requester, target });
+      const result = shortUrlPolicy.canDelete({ requester, target });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -136,7 +136,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createFindUrlPlusUser('ADMIN', 'admin-2', 'short-1', 'UNACTIVE');
 
-      const result = shortUrlPolicies.canDelete({ requester, target });
+      const result = shortUrlPolicy.canDelete({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -144,7 +144,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createFindUrlPlusUser('MASTER', 'master-1', 'short-1', 'UNACTIVE');
 
-      const result = shortUrlPolicies.canDelete({ requester, target });
+      const result = shortUrlPolicy.canDelete({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -152,7 +152,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('MASTER', 'master-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'UNACTIVE');
 
-      const result = shortUrlPolicies.canDelete({ requester, target });
+      const result = shortUrlPolicy.canDelete({ requester, target });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -160,7 +160,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('MASTER', 'master-1');
       const target = createFindUrlPlusUser('MASTER', 'master-2', 'short-1', 'UNACTIVE');
 
-      const result = shortUrlPolicies.canDelete({ requester, target });
+      const result = shortUrlPolicy.canDelete({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -168,7 +168,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('FREEBIE', 'freebie-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'UNACTIVE');
 
-      const result = shortUrlPolicies.canDelete({ requester, target });
+      const result = shortUrlPolicy.canDelete({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -176,7 +176,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('SUBSCRIBER', 'user-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'user-1', 'short-1', 'UNACTIVE');
 
-      const result = shortUrlPolicies.canDelete({ requester, target });
+      const result = shortUrlPolicy.canDelete({ requester, target });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
   });
@@ -187,7 +187,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'ACTIVE');
       const update = { originalUrl: 'https://newurl.com' };
 
-      const result = shortUrlPolicies.canUpdate({ requester, target, update });
+      const result = shortUrlPolicy.canUpdate({ requester, target, update });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -196,7 +196,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'ACTIVE');
       const update = { originalUrl: 'https://example.com' };
 
-      const result = shortUrlPolicies.canUpdate({ requester, target, update });
+      const result = shortUrlPolicy.canUpdate({ requester, target, update });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -204,7 +204,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'ACTIVE');
 
-      const result = shortUrlPolicies.canUpdate({ requester, target, update: {} });
+      const result = shortUrlPolicy.canUpdate({ requester, target, update: {} });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -213,7 +213,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'ACTIVE');
       const update = { expiresAt: new Date('2020-01-01').toDateString() };
 
-      const result = shortUrlPolicies.canUpdate({ requester, target, update });
+      const result = shortUrlPolicy.canUpdate({ requester, target, update });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -222,7 +222,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'ACTIVE');
       const update = { expiresAt: new Date('2027-01-01').toDateString() };
 
-      const result = shortUrlPolicies.canUpdate({ requester, target, update });
+      const result = shortUrlPolicy.canUpdate({ requester, target, update });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
   });
@@ -232,7 +232,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createBaseUser('ADMIN', 'admin-1');
 
-      const result = shortUrlPolicies.canList({ requester, target });
+      const result = shortUrlPolicy.canList({ requester, target });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -240,7 +240,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createBaseUser('SUBSCRIBER', 'sub-1');
 
-      const result = shortUrlPolicies.canList({ requester, target });
+      const result = shortUrlPolicy.canList({ requester, target });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -248,7 +248,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createBaseUser('ADMIN', 'admin-2');
 
-      const result = shortUrlPolicies.canList({ requester, target });
+      const result = shortUrlPolicy.canList({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -256,7 +256,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('ADMIN', 'admin-1');
       const target = createBaseUser('MASTER', 'master-1');
 
-      const result = shortUrlPolicies.canList({ requester, target });
+      const result = shortUrlPolicy.canList({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -264,7 +264,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('MASTER', 'master-1');
       const target = createBaseUser('ADMIN', 'admin-1');
 
-      const result = shortUrlPolicies.canList({ requester, target });
+      const result = shortUrlPolicy.canList({ requester, target });
       expect(result).toEqual({ isValid: true, statusCode: HTTP_STATUS.OK });
     });
 
@@ -272,7 +272,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('MASTER', 'master-1');
       const target = createBaseUser('MASTER', 'master-2');
 
-      const result = shortUrlPolicies.canList({ requester, target });
+      const result = shortUrlPolicy.canList({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -280,7 +280,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('FREEBIE', 'freebie-1');
       const target = createBaseUser('SUBSCRIBER', 'sub-1');
 
-      const result = shortUrlPolicies.canList({ requester, target });
+      const result = shortUrlPolicy.canList({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
 
@@ -288,7 +288,7 @@ describe('shortUrl.policy', () => {
       const requester = createBaseUser('SUBSCRIBER', 'sub-1');
       const target = createBaseUser('SUBSCRIBER', 'sub-2');
 
-      const result = shortUrlPolicies.canList({ requester, target });
+      const result = shortUrlPolicy.canList({ requester, target });
       expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
     });
   });
