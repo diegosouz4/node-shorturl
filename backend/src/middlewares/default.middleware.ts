@@ -6,22 +6,6 @@ import { logger } from '../utils/logger.util';
 import { HTTP_STATUS } from '../utils/httpsStatusCode.utils';
 
 class BaseMiddleware {
-  setCors() {
-    return (req: Request, res: Response, next: NextFunction) => {
-      res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH')
-      res.header('Access-Control-Allow-Headers', 'Content-Type, x-access-token')
-
-      if (req.method === 'OPTIONS') {
-        res.removeHeader('X-Powered-By');
-        res.removeHeader('Server');
-        res.removeHeader('ETag');
-        res.sendStatus(204);
-      }
-
-      next();
-    }
-  }
-
   setHelmet() {
     return (req: Request, res: Response, next: NextFunction) => {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
@@ -51,7 +35,6 @@ class BaseMiddleware {
       const userAgent = req.headers['user-agent'];
 
       if (userAgent) req.userAgent = userAgent;
-      if (date) req.accessDate = date;
       if (userIp) req.userIp = userIp;
 
       res.on('finish', () => {

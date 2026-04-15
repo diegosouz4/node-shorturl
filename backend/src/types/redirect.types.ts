@@ -3,7 +3,6 @@ import z from "zod";
 export type reqDetailsParams = {
   userAgent?: string;
   userIp?: string;
-  accessDate?: string;
 }
 
 export const redirectValidate = z.object({

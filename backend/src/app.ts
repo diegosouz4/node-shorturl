@@ -4,10 +4,15 @@ import cors from 'cors';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5000',
+  allowedHeaders: ['Content-Type', 'x-access-token'],
+  methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
+  optionsSuccessStatus: 204,
+}));
+
 app.use(express.json());
 
-app.use(defaultMiddleware.setCors());
 app.use(defaultMiddleware.setHelmet());
 app.use(defaultMiddleware.setMorgan());
 
@@ -24,4 +29,4 @@ app.use('/api/v1/r/', redirectRouter);
 app.use('/health', systemRouter);
 
 app.use(defaultMiddleware.handle404());
-export default app;
+export default app; 

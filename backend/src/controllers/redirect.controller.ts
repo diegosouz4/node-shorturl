@@ -12,16 +12,16 @@ class RedirectController {
 
     try {
       const { shortCode } = req.params;
-      const { userAgent, userIp, accessDate } = req;
+      const { userAgent, userIp } = req;
 
       const payload = Array.isArray(shortCode) ? shortCode[0] : shortCode;
-      const redirectUrl = await redirectService.redirect({ shortCode: payload, reqDetails: { userAgent, userIp, accessDate } });
+      const redirectUrl = await redirectService.redirect({ shortCode: payload, reqDetails: { userAgent, userIp } });
 
       return res.status(HTTP_STATUS.FOUND).redirect(redirectUrl);
     } catch (err: unknown) {
 
       const { message, statusCode } = handleErrorDetails(err);
-      log.error({ err, shortURL: req.params.shortCode, details: { userAgent: req.userAgent, userIp: req.userIp, accessDate: req.accessDate } }, message);
+      log.error({ err, shortURL: req.params.shortCode, details: { userAgent: req.userAgent, userIp: req.userIp } }, message);
 
       return errorResponse({ res, message: "Error redirecting URL", statusCode, details: message });
     }

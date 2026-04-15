@@ -26,14 +26,8 @@ class RedirectService {
     }
 
     const { id } = targetUrl;
-    let details: string | undefined = undefined;
 
-    if (reqDetails) {
-      const { accessDate, userAgent, userIp } = reqDetails;
-      details = JSON.stringify({ accessDate, userAgent, userIp })
-    }
-
-    await redirectModel.incrementClicks({ id, details });
+    await redirectModel.incrementClicks({ id, details: { userAgent: reqDetails?.userAgent, userIp: reqDetails?.userIp } });
     return targetUrl.originalUrl;
   }
 }
