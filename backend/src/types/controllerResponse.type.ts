@@ -23,3 +23,5 @@ export interface ErrorResponseTypes {
   details?: any;
   statusCode?: HttpStatus;
 }
+
+export type policyResult = { statusCode: HttpStatus, isValid: boolean }

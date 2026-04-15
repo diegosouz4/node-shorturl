@@ -12,10 +12,10 @@ class RedirectService {
     const targetUrl = await shortUrlModel.find({ shortUrl: shortCode });
     if (!targetUrl) throw new HttpError("Url não encontrada!", HTTP_STATUS.NOT_FOUND);
 
-    const { canRedirect, code } = redirectPolicy.canRedirect({ targetUrl });
+    const { isValid, statusCode } = redirectPolicy.canRedirect({ targetUrl });
 
-    if (!canRedirect) {
-      switch (code) {
+    if (!isValid) {
+      switch (statusCode) {
         case HTTP_STATUS.GONE:
           throw new HttpError("Url selecionada está expirada!", HTTP_STATUS.GONE);
         case HTTP_STATUS.NOT_FOUND:

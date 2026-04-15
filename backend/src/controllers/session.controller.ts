@@ -7,6 +7,7 @@ import { logger } from '../utils/logger.util';
 import type { Request, Response } from 'express';
 import type { createUserTypes } from '../types/user.types';
 import type { logintypes } from '../types/session.types';
+import { HTTP_STATUS } from '../utils/httpsStatusCode.utils';
 
 class SessionController {
   async login(req: Request, res: Response) {
@@ -23,7 +24,7 @@ class SessionController {
       log.error({ err, email: (user as logintypes)?.email }, 'Error durante o login');
 
       const { message, statusCode } = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Error durante o login!', statusCode: statusCode ?? 500, details: message })
+      return errorResponse({ res, message: 'Error durante o login!', statusCode: statusCode ?? HTTP_STATUS.INTERNAL_SERVER_ERROR, details: message })
     }
   }
 
@@ -34,12 +35,12 @@ class SessionController {
 
     try {
       const newUser = await sessionService.addUser({ payload, reqUser: jwtUser });
-      return successResponse({ res, message: 'Novo usuario criado!', statusCode: 201, data: newUser });
+      return successResponse({ res, message: 'Novo usuario criado!', statusCode: HTTP_STATUS.CREATED, data: newUser });
     } catch (err: unknown) {
       log.error({ err, email: payload?.email, requestedBy: jwtUser?.id }, 'Error ao criar usuário');
 
       const { message, statusCode } = handleErrorDetails(err);
-      return errorResponse({ res, message: 'Error ao criar usuário!', statusCode: statusCode ?? 500, details: message })
+      return errorResponse({ res, message: 'Error ao criar usuário!', statusCode: statusCode ?? HTTP_STATUS.INTERNAL_SERVER_ERROR, details: message })
     }
   }
 }

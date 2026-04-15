@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { urlStatus } from '../generated/client';
+import { UrlStatus } from '../generated/client';
 import { cursorPaginationsParams } from './cursorPagination.types';
 
-const allowedUrlStatus = Object.values(urlStatus);
+const allowedUrlStatus = Object.values(UrlStatus);
 
 export const createShortURL = z.object(
   {
