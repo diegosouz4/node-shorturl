@@ -14,7 +14,7 @@ model ShortUrl {
   clicks      Int       @default(0)
   expiresAt   DateTime?
 
-  status UrlStatus     @default(UNACTIVE)
+  status UrlStatus     @default(ACTIVE)
   logs   ShortUrlLog[]
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -27,9 +27,11 @@ model ShortUrl {
 }
 
 model ShortUrlLog {
-  id      Int       @id @default(autoincrement())
-  status  LogStatus @default(CREATED)
-  details String?
+  id        Int       @id @default(autoincrement())
+  status    LogStatus @default(CREATED)
+  details   String?
+  userAgent String?
+  userIp    String?
 
   shortUrl   ShortUrl? @relation(fields: [shortUrlId], references: [id], onDelete: Cascade)
   shortUrlId String

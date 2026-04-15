@@ -17,9 +17,9 @@ type findUrlPlusUser = ShortUrl & {
   user: { id: string; role: Roles; };
 }
 
-class shortUrlPolicy {
+class ShortUrlPolicy {
   canCreate({ requester }: { requester: userWithCount }): policyResult {
-    if (requester.role === 'FREEBIE' && requester.totalCreated >= 3) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (requester.role === 'FREEBIE' && requester.totalCreated >= 3) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
     return { isValid: true, statusCode: HTTP_STATUS.OK };
   }
 
@@ -70,4 +70,4 @@ class shortUrlPolicy {
   }
 }
 
-export const shortUrlPolicies = new shortUrlPolicy();
+export const shortUrlPolicy = new ShortUrlPolicy();

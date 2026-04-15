@@ -3,7 +3,7 @@ import { shortUrlModel } from "../model/shortUrl.model";
 import { userModel } from "../model/user.model";
 import { generateShortURL } from "../utils/generateShortURL.util";
 import { userId } from "../types/user.types";
-import { shortUrlPolicies } from "../policies/shortUrl.policy";
+import { shortUrlPolicy } from "../policies/shortUrl.policy";
 import { type createShortURLType, createShortURL, type findShortURLType, findShortUrl, type updateShortURLType, updateShortUrl, listShortUrl, type listShortURLType } from "../types/shortUrl.types";
 
 import { ShortUrlWhereInput } from '../generated/models';
@@ -20,7 +20,7 @@ class ShortURLServices {
     userId.parse({ id: reqUser.id });
 
     const totalCreated = await shortUrlModel.countByUser({ id: reqUser.id });
-    const { isValid, statusCode } = shortUrlPolicies.canCreate({ requester: { ...reqUser, totalCreated } });
+    const { isValid, statusCode } = shortUrlPolicy.canCreate({ requester: { ...reqUser, totalCreated } });
     if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     let shortUrl = '';
@@ -52,7 +52,7 @@ class ShortURLServices {
     const target = await shortUrlModel.find({ ...sanitize });
     if (!target) throw new HttpError('Short URL not found!', HTTP_STATUS.NOT_FOUND);
 
-    const { isValid, statusCode } = shortUrlPolicies.canView({ requester: reqUser, target });
+    const { isValid, statusCode } = shortUrlPolicy.canView({ requester: reqUser, target });
     if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     return target;
@@ -71,7 +71,7 @@ class ShortURLServices {
 
     if (target.status === 'ACTIVE') throw new HttpError('Active URLs cannot be removed. Deactivate before deleting.', HTTP_STATUS.UNAUTHORIZED);
 
-    const { isValid, statusCode } = shortUrlPolicies.canDelete({ requester: reqUser, target });
+    const { isValid, statusCode } = shortUrlPolicy.canDelete({ requester: reqUser, target });
     if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     const del = await shortUrlModel.remove({ urlId: target.id });
@@ -91,7 +91,7 @@ class ShortURLServices {
     const target = await shortUrlModel.find({ shortUrl: payload.shortUrl });
     if (!target || target === null) throw new HttpError('Short URL not found!', HTTP_STATUS.NOT_FOUND);
 
-    const { isValid, statusCode } = shortUrlPolicies.canUpdate({ requester: reqUser, target, update: payload });
+    const { isValid, statusCode } = shortUrlPolicy.canUpdate({ requester: reqUser, target, update: payload });
     if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     const updated = await shortUrlModel.update({ ...sanitize, id: target.id });
@@ -113,7 +113,7 @@ class ShortURLServices {
 
     if (!target || target === null) throw new HttpError("User not found!", HTTP_STATUS.NOT_FOUND);
 
-    const { isValid, statusCode } = shortUrlPolicies.canList({ requester: reqUser, target });
+    const { isValid, statusCode } = shortUrlPolicy.canList({ requester: reqUser, target });
     if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);
 
     const where: ShortUrlWhereInput = {
