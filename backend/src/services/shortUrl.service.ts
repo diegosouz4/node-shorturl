@@ -9,6 +9,8 @@ import { type createShortURLType, createShortURL, type findShortURLType, findSho
 import { ShortUrlWhereInput } from '../generated/models';
 import { config } from '../config/system.config';
 import { cursorObj, cursorObjTypes, cursorPaginationsParams, cursorParams, decodeCursor, encodeCursor } from "../types/cursorPagination.types";
+import { HttpError } from "../utils/httpError.util";
+import { HTTP_STATUS } from "../utils/httpsStatusCode.utils";
 
 const defaultPaginationsParams = config.pagination;
 
@@ -18,7 +20,8 @@ class ShortURLServices {
     userId.parse({ id: reqUser.id });
 
     const totalCreated = await shortUrlModel.countByUser({ id: reqUser.id });
-    if (!shortUrlPolicies.canCreate({ requester: { ...reqUser, totalCreated } })) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+    const { isValid, statusCode } = shortUrlPolicies.canCreate({ requester: { ...reqUser, totalCreated } });
+    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
 
     let shortUrl = '';
 
@@ -32,7 +35,7 @@ class ShortURLServices {
       };
     }
 
-    if (!shortUrl) throw new Error('Falha ao gerar shortURL após múltiplas tentativas');
+    if (!shortUrl) throw new HttpError('Falha ao gerar shortURL após múltiplas tentativas', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     const createShortUrl = await shortUrlModel.create({ userId: reqUser.id, payload: { ...payload, shortUrl } });
 
     return createShortUrl;
@@ -47,9 +50,10 @@ class ShortURLServices {
     if (payload.urlId) sanitize.urlId = payload.urlId.trim();
 
     const target = await shortUrlModel.find({ ...sanitize });
-    if (!target) throw new Error("Url não foi encontrada!");
+    if (!target) throw new HttpError("Url não foi encontrada!", HTTP_STATUS.NOT_FOUND);
 
-    if (!shortUrlPolicies.canView({ requester: reqUser, target })) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+    const { isValid, statusCode } = shortUrlPolicies.canView({ requester: reqUser, target });
+    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
 
     return target;
   }
@@ -63,10 +67,12 @@ class ShortURLServices {
     if (payload.urlId) sanitize.urlId = payload.urlId.trim();
 
     const target = await shortUrlModel.find({ ...sanitize });
-    if (!target) throw new Error("Url não foi encontrada!");
+    if (!target) throw new HttpError("Url não foi encontrada!", HTTP_STATUS.NOT_FOUND);
 
-    if (target.status === 'ACTIVE') throw new Error('URLs ativas não podem ser removidas. Desative antes de excluir.');
-    if (!shortUrlPolicies.canDelete({ requester: reqUser, target })) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+    if (target.status === 'ACTIVE') throw new HttpError('URLs ativas não podem ser removidas. Desative antes de excluir.', HTTP_STATUS.UNAUTHORIZED);
+
+    const { isValid, statusCode } = shortUrlPolicies.canDelete({ requester: reqUser, target });
+    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
 
     const del = await shortUrlModel.remove({ urlId: target.id });
     return del;
@@ -83,9 +89,10 @@ class ShortURLServices {
     if (payload.status) sanitize.status = payload.status;
 
     const target = await shortUrlModel.find({ shortUrl: payload.shortUrl });
-    if (!target || target === null) throw new Error("Url não foi encontrada!");
+    if (!target || target === null) throw new HttpError("Url não foi encontrada!", HTTP_STATUS.NOT_FOUND);
 
-    if (!shortUrlPolicies.canUpdate({ requester: reqUser, target, update: payload })) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+    const { isValid, statusCode } = shortUrlPolicies.canUpdate({ requester: reqUser, target, update: payload });
+    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
 
     const updated = await shortUrlModel.update({ ...sanitize, id: target.id });
     return updated;
@@ -104,9 +111,10 @@ class ShortURLServices {
     let nextCursorObj: cursorObjTypes | undefined = undefined;
     if (pagination.cursor) nextCursorObj = cursorObj.parse(decodeCursor(pagination.cursor));
 
+    if (!target || target === null) throw new HttpError("Usuário não encontrado!", HTTP_STATUS.NOT_FOUND);
 
-    if (!target || target === null) throw new Error("Usuário não encontrado!");
-    if (!shortUrlPolicies.canList({ requester: reqUser, target })) throw new Error('Você não tem autorização para executar esse tipo de ação!');
+    const { isValid, statusCode } = shortUrlPolicies.canList({ requester: reqUser, target });
+    if (!isValid) throw new HttpError('Você não tem autorização para executar esse tipo de ação!', statusCode);
 
     const where: ShortUrlWhereInput = {
       userId: isSelfSearch ? reqUser.id : filterBy?.userId,
