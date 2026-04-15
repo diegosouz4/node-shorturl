@@ -1,6 +1,8 @@
 import type { Roles, ShortUrl } from "../generated/client";
-import type { listShortURLType, updateShortURLType } from "../types/shortUrl.types";
+import { policyResult } from "../types/controllerResponse.type";
+import type { updateShortURLType } from "../types/shortUrl.types";
 import { handlePermisson } from "../utils/checkPermision.util";
+import { HTTP_STATUS } from "../utils/httpsStatusCode.utils";
 
 type baseUser = {
   id: string;
@@ -16,54 +18,55 @@ type findUrlPlusUser = ShortUrl & {
 }
 
 class shortUrlPolicy {
-  canCreate({ requester }: { requester: userWithCount }) {
-    if (requester.role === 'FREEBIE' && requester.totalCreated >= 3) return false;
-    return true;
+  canCreate({ requester }: { requester: userWithCount }): policyResult {
+    if (requester.role === 'FREEBIE' && requester.totalCreated >= 3) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    return { isValid: true, statusCode: HTTP_STATUS.OK };
   }
 
-  canView({ requester, target }: { requester: baseUser, target: findUrlPlusUser }) {
+  canView({ requester, target }: { requester: baseUser, target: findUrlPlusUser }): policyResult {
     const isSelfView = requester.id === target.user.id;
     const isUserAdmOrMaster = handlePermisson.isAdminOrMaster(requester.role);
     const isTargetAdmOrMaster = handlePermisson.isAdminOrMaster(target.user.role);
 
-    if (!isUserAdmOrMaster && !isSelfView) return false;
-    if (requester.role === 'ADMIN' && !isSelfView && isTargetAdmOrMaster) return false;
-    if (requester.role === 'MASTER' && !isSelfView && target.user.role === 'MASTER') return false;
+    if (!isUserAdmOrMaster && !isSelfView) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (requester.role === 'ADMIN' && !isSelfView && isTargetAdmOrMaster) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (requester.role === 'MASTER' && !isSelfView && target.user.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
 
-    return true;
+    return { isValid: true, statusCode: HTTP_STATUS.OK };
   }
 
-  canDelete({ requester, target }: { requester: baseUser, target: findUrlPlusUser }) {
+  canDelete({ requester, target }: { requester: baseUser, target: findUrlPlusUser }): policyResult {
     const isUrlActive = target.status === 'ACTIVE';
+    if (isUrlActive) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
 
-    if (isUrlActive) return false;
     return this.canView({ requester, target });
   }
 
-  canUpdate({ requester, target, update }: { requester: baseUser, target: findUrlPlusUser, update: updateShortURLType }) {
+  canUpdate({ requester, target, update }: { requester: baseUser, target: findUrlPlusUser, update: updateShortURLType }): policyResult {
     const isSameURL = update.originalUrl ? update.originalUrl === target.originalUrl : true;
     const isActive = target.status === 'ACTIVE';
 
-    if (!isSameURL && isActive) throw new Error('Nao pode alterar url quando o status esta como ativo. ')
+    if (!isSameURL && isActive) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+
     if (update.expiresAt) {
       const now = new Date();
       const expired = new Date(update.expiresAt);
-      if (now > expired) return false;
+      if (now > expired) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
     }
 
     return this.canView({ requester, target });
   }
 
-  canList({ requester, target }: { requester: baseUser, target: baseUser }) {
+  canList({ requester, target }: { requester: baseUser, target: baseUser }): policyResult {
     const isSelfView = requester.id === target.id;
     const isUserAdmOrMaster = handlePermisson.isAdminOrMaster(requester.role);
     const isTargetAdmOrMaster = handlePermisson.isAdminOrMaster(target.role);
 
-    if (!isUserAdmOrMaster && !isSelfView) return false;
-    if (requester.role === 'ADMIN' && !isSelfView && isTargetAdmOrMaster) return false;
-    if (requester.role === 'MASTER' && !isSelfView && target.role === 'MASTER') return false;
+    if (!isUserAdmOrMaster && !isSelfView) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (requester.role === 'ADMIN' && !isSelfView && isTargetAdmOrMaster) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (requester.role === 'MASTER' && !isSelfView && target.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
 
-    return true;
+    return { isValid: true, statusCode: HTTP_STATUS.OK };
   }
 }
 
