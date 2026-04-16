@@ -32,7 +32,7 @@ class Auth {
       const { headers } = req;
 
       try {
-        if (!headers || !headers.authorization) throw new Error("Authorization header not sent");
+        if (!headers || !headers.authorization) throw new HttpError("Authorization header not sent", HTTP_STATUS.UNAUTHORIZED);
 
         const [, token] = headers.authorization.split(' ');
         if (!token) throw new Error("Token not provided");
