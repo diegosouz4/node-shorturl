@@ -69,7 +69,7 @@ class ShortURLServices {
     const target = await shortUrlModel.find({ ...sanitize });
     if (!target) throw new HttpError('Short URL not found!', HTTP_STATUS.NOT_FOUND);
 
-    if (target.status === 'ACTIVE') throw new HttpError('Active URLs cannot be removed. Deactivate before deleting.', HTTP_STATUS.UNAUTHORIZED);
+    if (target.status === 'ACTIVE') throw new HttpError('Active URLs cannot be removed. Deactivate before deleting.', HTTP_STATUS.FORBIDDEN);
 
     const { isValid, statusCode } = shortUrlPolicy.canDelete({ requester: reqUser, target });
     if (!isValid) throw new HttpError('You do not have authorization to perform this action!', statusCode);

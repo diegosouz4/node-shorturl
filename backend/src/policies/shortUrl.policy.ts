@@ -28,16 +28,16 @@ class ShortUrlPolicy {
     const isUserAdmOrMaster = handlePermisson.isAdminOrMaster(requester.role);
     const isTargetAdmOrMaster = handlePermisson.isAdminOrMaster(target.user.role);
 
-    if (!isUserAdmOrMaster && !isSelfView) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (requester.role === 'ADMIN' && !isSelfView && isTargetAdmOrMaster) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (requester.role === 'MASTER' && !isSelfView && target.user.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (!isUserAdmOrMaster && !isSelfView) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (requester.role === 'ADMIN' && !isSelfView && isTargetAdmOrMaster) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (requester.role === 'MASTER' && !isSelfView && target.user.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
 
     return { isValid: true, statusCode: HTTP_STATUS.OK };
   }
 
   canDelete({ requester, target }: { requester: baseUser, target: findUrlPlusUser }): policyResult {
     const isUrlActive = target.status === 'ACTIVE';
-    if (isUrlActive) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (isUrlActive) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
 
     return this.canView({ requester, target });
   }
@@ -46,12 +46,12 @@ class ShortUrlPolicy {
     const isSameURL = update.originalUrl ? update.originalUrl === target.originalUrl : true;
     const isActive = target.status === 'ACTIVE';
 
-    if (!isSameURL && isActive) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (!isSameURL && isActive) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
 
     if (update.expiresAt) {
       const now = new Date();
       const expired = new Date(update.expiresAt);
-      if (now > expired) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+      if (now > expired) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
     }
 
     return this.canView({ requester, target });
@@ -62,9 +62,9 @@ class ShortUrlPolicy {
     const isUserAdmOrMaster = handlePermisson.isAdminOrMaster(requester.role);
     const isTargetAdmOrMaster = handlePermisson.isAdminOrMaster(target.role);
 
-    if (!isUserAdmOrMaster && !isSelfView) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (requester.role === 'ADMIN' && !isSelfView && isTargetAdmOrMaster) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (requester.role === 'MASTER' && !isSelfView && target.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (!isUserAdmOrMaster && !isSelfView) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (requester.role === 'ADMIN' && !isSelfView && isTargetAdmOrMaster) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (requester.role === 'MASTER' && !isSelfView && target.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
 
     return { isValid: true, statusCode: HTTP_STATUS.OK };
   }

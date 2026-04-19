@@ -14,19 +14,19 @@ class Policy {
     if (requester.role === 'ADMIN' && !handlePermisson.isAdminOrMaster(target.role)) return { isValid: true, statusCode: HTTP_STATUS.ACCEPTED };
     if (requester.role === 'MASTER' && target.role !== 'MASTER') return { isValid: true, statusCode: HTTP_STATUS.ACCEPTED };
 
-    return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
   }
 
   canAssingRole(requester: baseUser, target: baseUser): policyResult {
-    if (!handlePermisson.isAdminOrMaster(requester.role)) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (requester.role === 'ADMIN' && handlePermisson.isAdminOrMaster(target.role)) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (requester.role === 'MASTER' && target.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (!handlePermisson.isAdminOrMaster(requester.role)) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (requester.role === 'ADMIN' && handlePermisson.isAdminOrMaster(target.role)) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (requester.role === 'MASTER' && target.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
 
     return { isValid: true, statusCode: HTTP_STATUS.ACCEPTED };
   }
 
   canAssignStatus(requester: baseUser, target: baseUser): policyResult {
-    if (requester.id === target.id) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (requester.id === target.id) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
     return this.canAssingRole(requester, target);
   }
 
@@ -35,17 +35,17 @@ class Policy {
   }
 
   canAdd(requester: baseUser, targetRole: Roles): policyResult {
-    if (!handlePermisson.isAdminOrMaster(requester.role)) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (requester.role === 'ADMIN' && handlePermisson.isAdminOrMaster(targetRole)) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (requester.role === 'MASTER' && targetRole === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (!handlePermisson.isAdminOrMaster(requester.role)) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (requester.role === 'ADMIN' && handlePermisson.isAdminOrMaster(targetRole)) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (requester.role === 'MASTER' && targetRole === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
 
     return { isValid: true, statusCode: HTTP_STATUS.ACCEPTED };
   }
 
   canDelete(requester: baseUser, target: baseUser): policyResult {
-    if (requester.id === target.id) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (requester.role === 'ADMIN' && handlePermisson.isAdminOrMaster(target.role)) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
-    if (target.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (requester.id === target.id) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (requester.role === 'ADMIN' && handlePermisson.isAdminOrMaster(target.role)) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
+    if (target.role === 'MASTER') return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
 
     return { isValid: true, statusCode: HTTP_STATUS.ACCEPTED };
   }
@@ -55,7 +55,7 @@ class Policy {
   }
 
   canList(requester: baseUser): policyResult {
-    if (!handlePermisson.isAdminOrMaster(requester.role)) return { isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED };
+    if (!handlePermisson.isAdminOrMaster(requester.role)) return { isValid: false, statusCode: HTTP_STATUS.FORBIDDEN };
 
     return { isValid: true, statusCode: HTTP_STATUS.ACCEPTED };
   }
