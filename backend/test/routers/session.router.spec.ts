@@ -7,33 +7,46 @@ import { db } from '../../src/config/db.config';
 import App from '../../src/app';
 import request from 'supertest';
 import { logintypes } from "../../src/types/session.types";
+import { Roles } from "../../src/generated/enums";
 
 const userDb = db.user;
 
 describe('Session router', () => {
   /* [...router]/api/v1/sessions */
 
-  describe('POST /login', () => {
-    const testUser: createUserTypes = {
-      email: 'test@example.com',
+  const getToken = async ({ email, password }: { email: string, password: string }) => {
+    let token: string = '';
+    const loginResponse = await request(App).post('/api/v1/sessions/login').send({ email, password });
+    if (loginResponse.statusCode === HTTP_STATUS.OK && loginResponse.body.success) token = loginResponse.body.data.token;
+    return token;
+  }
+
+  const generateUser = (name: string, role?: Roles): createUserTypes => {
+    return {
+      email: 'jest' + name + 'test@example.com',
       password: 'Abc@1234',
-      firstName: 'TesteUser',
+      firstName: name,
       lastName: 'LastName',
-      role: 'FREEBIE'
+      role: role ?? 'FREEBIE'
     }
+  }
 
-    beforeAll(async () => {
-      const findTestUser = await userDb.findFirst({ where: { email: testUser.email } });
-      if (!findTestUser) await userDb.create({ data: { ...testUser, password: await handleUserPass.generateHash({ password: testUser.password }) } });
-      if (findTestUser && findTestUser.role !== testUser.role) await userDb.update({ where: { email: testUser.email }, data: { role: 'FREEBIE' } })
-    });
+  const testUser = generateUser('jhon');
+  let token: string = '';
 
-    afterAll(async () => {
-      const findTestUser = await userDb.findFirst({ where: { email: testUser.email } });
-      if (findTestUser) await userDb.delete({ where: { email: testUser.email } });
-    });
+  beforeAll(async () => {
+    const findTestUser = await userDb.findFirst({ where: { email: testUser.email } });
+    if (!findTestUser) await userDb.create({ data: { ...testUser, password: await handleUserPass.generateHash({ password: testUser.password }) } });
+    if (findTestUser && findTestUser.role !== testUser.role) await userDb.update({ where: { email: testUser.email }, data: { role: 'FREEBIE' } })
+  });
 
-    it('should return error when accessing the login route with no body', async () => {
+  afterAll(async () => {
+    await userDb.deleteMany({ where: { email: { startsWith: 'jest' } } });
+  });
+
+  describe('POST /login', () => {
+
+    it('should return an error for missing request body on login', async () => {
       const payload = {};
       const response = await request(App).post('/api/v1/sessions/login').send(payload);
 
@@ -42,7 +55,7 @@ describe('Session router', () => {
       expect(response.body.success).toBe(false);
     })
 
-    it('should return error when accessing the login route without passing the password', async () => {
+    it('should return an error for missing password in login request', async () => {
       const payload = { email: 'anna@teste.com' };
       const response = await request(App).post('/api/v1/sessions/login').send(payload);
 
@@ -57,7 +70,7 @@ describe('Session router', () => {
       expect(response.body.success).toBe(false);
     })
 
-    it('should return error when accessing the login route without passing the email', async () => {
+    it('should return an error for missing email in login request', async () => {
       const payload = { password: '123456' };
       const response = await request(App).post('/api/v1/sessions/login').send(payload);
 
@@ -72,7 +85,7 @@ describe('Session router', () => {
       expect(response.body.success).toBe(false);
     })
 
-    it('should return error when accessing the login route with invalid credentials', async () => {
+    it('should return an unauthorized status for invalid login credentials', async () => {
       const payload = { password: '123456', email: 'invalid@email.com' };
       const response = await request(App).post('/api/v1/sessions/login').send(payload);
 
@@ -87,7 +100,7 @@ describe('Session router', () => {
       expect(response.body.success).toBe(false);
     })
 
-    it('should return success when accessing the login route with valid credentials', async () => {
+    it('should return a successful response with a token and user data for valid login credentials', async () => {
       const payload: logintypes = { password: testUser.password, email: testUser.email };
       const response = await request(App).post('/api/v1/sessions/login').send(payload);
 
@@ -102,7 +115,7 @@ describe('Session router', () => {
       expect(response.body.data.user).toMatchObject({ email: testUser.email, firstName: testUser.firstName, lastName: testUser.lastName, role: testUser.role });
     })
 
-    it('should return error when accessing the login route with invalid password', async () => {
+    it('should return an unauthorized status for incorrect password in login request', async () => {
       const payload: logintypes = { password: '1234467', email: testUser.email };
       const response = await request(App).post('/api/v1/sessions/login').send(payload);
 
@@ -112,74 +125,39 @@ describe('Session router', () => {
   });
 
   describe('POST /addUser', () => {
-    let token: string = ''
 
-    const testUser: createUserTypes = {
-      email: 'test2@example.com',
-      password: 'Abc@1234',
-      firstName: 'TesteUser',
-      lastName: 'LastName',
-      role: 'FREEBIE'
-    }
-
-    const targetUser: createUserTypes = {
-      email: 'test@adduser.com',
-      password: 'Abc@1234',
-      firstName: 'AddUser',
-      lastName: 'LastName',
-      role: 'FREEBIE'
-    }
+    const targetUser = generateUser('maria');
 
     beforeAll(async () => {
-      const [findTestUser, findTargetuser] = await Promise.all([userDb.findFirst({ where: { email: testUser.email } }), userDb.findFirst({ where: { email: targetUser.email } })]);
-
-      if (!findTestUser) await userDb.create({ data: { ...testUser, password: await handleUserPass.generateHash({ password: testUser.password }) } });
-      if (findTargetuser) await userDb.deleteMany({ where: { email: targetUser.email } });
-
-      const response = await request(App).post('/api/v1/sessions/login').send({ email: testUser.email, password: testUser.password });
-      if (response.statusCode === HTTP_STATUS.OK && response.body.success) token = response.body.data.token;
+      token = await getToken({ email: testUser.email, password: testUser.password });
     });
 
-    afterAll(async () => {
-      const [findTestUser, findTargetuser] = await Promise.all([
-        userDb.findFirst({ where: { email: testUser.email } }),
-        userDb.findFirst({ where: { email: targetUser.email } })
-      ]);
-
-      if (!findTestUser) await userDb.deleteMany({ where: { email: testUser.email } });
-      if (findTargetuser) await userDb.deleteMany({ where: { email: targetUser.email } });
-    });
-
-    it('should return unauthorized if the token is invalid or not send', async () => {
+    it('should return a 401 status when no token is provided', async () => {
       const response = await request(App).post('/api/v1/sessions/addUser').send(targetUser);
 
       expect(response.statusCode).toEqual(HTTP_STATUS.UNAUTHORIZED);
       expect(response.body.message).toEqual('Unauthorized access!');
-      expect(response.body.success).toEqual(false);
+      expect(response.body.success).toBe(false);
     })
 
-    it('should return error when the token is valid but the user does not have permission to add a new user', async () => {
+    it('should return a 403 status for users without admin privileges', async () => {
       await userDb.update({ where: { email: testUser.email }, data: { role: 'FREEBIE' } });
       const response = await request(App).post('/api/v1/sessions/addUser').send(targetUser).set('Authorization', `Bearer ${token}`);
 
-      console.log("Token: ", token);
-
       expect(response.statusCode).toEqual(HTTP_STATUS.UNAUTHORIZED);
       expect(response.body.message).toEqual('Unauthorized access!');
-      expect(response.body.success).toEqual(false);
+      expect(response.body.success).toBe(false);
     })
 
-    it('should return a new user if the token is valid and the role is Admin or Master', async () => {
+    it('should create a new user when provided with a valid admin token', async () => {
       await userDb.update({ where: { email: testUser.email }, data: { role: 'ADMIN' } });
-
-      const login = await request(App).post('/api/v1/sessions/login').send({ email: testUser.email, password: testUser.password });
-      if (login.statusCode === HTTP_STATUS.OK && login.body.success) token = login.body.data.token;
-
+      token = await getToken({ email: testUser.email, password: testUser.password });
+      
       const response = await request(App).post('/api/v1/sessions/addUser').send(targetUser).set('Authorization', `Bearer ${token}`);
 
       expect(response.statusCode).toEqual(HTTP_STATUS.CREATED);
       expect(response.body.message).toEqual('New user created!');
-      expect(response.body.success).toEqual(true);
+      expect(response.body.success).toBe(true);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id');
@@ -188,16 +166,12 @@ describe('Session router', () => {
       expect(response.body.data.email).toEqual(targetUser.email);
     })
 
-    it('should return when try to create a new user with a email that already exists', async () => {
+    it('should return a 409 status for duplicate email during user creation', async () => {
       await userDb.update({ where: { email: testUser.email }, data: { role: 'ADMIN' } });
-
-      const login = await request(App).post('/api/v1/sessions/login').send({ email: testUser.email, password: testUser.password });
-      if (login.statusCode === HTTP_STATUS.OK && login.body.success) token = login.body.data.token;
-
-      await request(App).post('/api/v1/sessions/addUser').send(targetUser).set('Authorization', `Bearer ${token}`);
+      token = await getToken({ email: testUser.email, password: testUser.password });
+      
       const response = await request(App).post('/api/v1/sessions/addUser').send(targetUser).set('Authorization', `Bearer ${token}`);
 
-      expect(response.body.success).toEqual(false);
       expect(response.statusCode).toEqual(HTTP_STATUS.CONFLICT);
       expect(response.body.message).toEqual('Error creating user!');
       expect(response.body.details).toEqual('Duplicate record. Value already exists.');

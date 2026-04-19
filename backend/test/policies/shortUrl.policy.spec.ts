@@ -71,7 +71,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('ADMIN', 'admin-2');
 
       const result = shortUrlPolicy.canView({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when ADMIN tries to view MASTER user URL', () => {
@@ -79,7 +79,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('MASTER', 'master-1');
 
       const result = shortUrlPolicy.canView({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when MASTER views non-MASTER user URL', () => {
@@ -95,7 +95,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('MASTER', 'master-2');
 
       const result = shortUrlPolicy.canView({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when FREEBIE tries to view another user URL', () => {
@@ -103,7 +103,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1');
 
       const result = shortUrlPolicy.canView({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when SUBSCRIBER tries to view another user URL', () => {
@@ -111,7 +111,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-2');
 
       const result = shortUrlPolicy.canView({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 
@@ -121,7 +121,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'ACTIVE');
 
       const result = shortUrlPolicy.canDelete({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when ADMIN deletes non-ADMIN/MASTER user URL with UNACTIVE status', () => {
@@ -137,7 +137,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('ADMIN', 'admin-2', 'short-1', 'UNACTIVE');
 
       const result = shortUrlPolicy.canDelete({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when ADMIN tries to delete MASTER user URL even with UNACTIVE status', () => {
@@ -145,7 +145,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('MASTER', 'master-1', 'short-1', 'UNACTIVE');
 
       const result = shortUrlPolicy.canDelete({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when MASTER deletes non-MASTER user URL with UNACTIVE status', () => {
@@ -161,7 +161,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('MASTER', 'master-2', 'short-1', 'UNACTIVE');
 
       const result = shortUrlPolicy.canDelete({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when FREEBIE tries to delete another user URL even with UNACTIVE status', () => {
@@ -169,7 +169,7 @@ describe('shortUrl.policy', () => {
       const target = createFindUrlPlusUser('SUBSCRIBER', 'sub-1', 'short-1', 'UNACTIVE');
 
       const result = shortUrlPolicy.canDelete({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when user deletes their own URL with UNACTIVE status', () => {
@@ -188,7 +188,7 @@ describe('shortUrl.policy', () => {
       const update = { originalUrl: 'https://newurl.com' };
 
       const result = shortUrlPolicy.canUpdate({ requester, target, update });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return isValid as true and statusCode as 200 when try to update a active shortUrl without change the originalUrl', () => {
@@ -214,7 +214,7 @@ describe('shortUrl.policy', () => {
       const update = { expiresAt: new Date('2020-01-01').toDateString() };
 
       const result = shortUrlPolicy.canUpdate({ requester, target, update });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return isValid as true and statusCode as 200 when expiresAt is in the future', () => {
@@ -249,7 +249,7 @@ describe('shortUrl.policy', () => {
       const target = createBaseUser('ADMIN', 'admin-2');
 
       const result = shortUrlPolicy.canList({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when ADMIN tries to list MASTER user URLs', () => {
@@ -257,7 +257,7 @@ describe('shortUrl.policy', () => {
       const target = createBaseUser('MASTER', 'master-1');
 
       const result = shortUrlPolicy.canList({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when MASTER lists non-MASTER user URLs', () => {
@@ -273,7 +273,7 @@ describe('shortUrl.policy', () => {
       const target = createBaseUser('MASTER', 'master-2');
 
       const result = shortUrlPolicy.canList({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when FREEBIE tries to list another user URLs', () => {
@@ -281,7 +281,7 @@ describe('shortUrl.policy', () => {
       const target = createBaseUser('SUBSCRIBER', 'sub-1');
 
       const result = shortUrlPolicy.canList({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when SUBSCRIBER tries to list another user URLs', () => {
@@ -289,7 +289,7 @@ describe('shortUrl.policy', () => {
       const target = createBaseUser('SUBSCRIBER', 'sub-2');
 
       const result = shortUrlPolicy.canList({ requester, target });
-      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(result).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 });

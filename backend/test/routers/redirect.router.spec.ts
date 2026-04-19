@@ -10,13 +10,20 @@ const userDb = db.user;
 const shortUrlDb = db.shortUrl;
 
 describe('Redirect Router', () => {
+  const getToken = async ({ email, password }: { email: string, password: string }) => {
+    let token: string = '';
+    const login = await request(App).post('/api/v1/sessions/login').send({ email, password });
+    if (login.statusCode === HTTP_STATUS.OK && login.body.success) token = login.body.data.token;
+    return token;
+  }
+
   describe('/:shortCode', () => {
     const testPayload: createShortURLType = {
-      originalUrl: 'https://dsouza.com.br/'
+      originalUrl: 'https://dsouza.com.br/?ts=jest'
     };
 
     const testUser: createUserTypes = {
-      email: 'test@example.com',
+      email: 'jestTeste@example.com',
       password: 'Abc@1234',
       firstName: 'TesteUser',
       lastName: 'LastName',
@@ -30,21 +37,18 @@ describe('Redirect Router', () => {
       let findUser = await userDb.findFirst({ where: { email: testUser.email } });
       if (!findUser) await request(App).post('/api/v1/users').send(testUser);
 
-      const getToken = await request(App).post('/api/v1/sessions/login').send({ email: testUser.email, password: testUser.password });
-      if (getToken.statusCode === HTTP_STATUS.OK && getToken.body.success) token = getToken.body.data.token;
+      token = await getToken({email: testUser.email, password: testUser.password});
 
-      if (token) {
-        const createURl = await request(App).post('/api/v1/urls').send(testPayload).set('Authorization', `Bearer ${token}`);
-        if (createURl.statusCode === HTTP_STATUS.CREATED && createURl.body.data) {
-          shortUrl = createURl.body.data.shortUrl;
-        }
+      const createURl = await request(App).post('/api/v1/urls').send(testPayload).set('Authorization', `Bearer ${token}`);
+      if (createURl.statusCode === HTTP_STATUS.CREATED && createURl.body.data) {
+        shortUrl = createURl.body.data.shortUrl;
       }
     });
 
     afterAll(async () => {
       await Promise.all([
-        userDb.delete({ where: { email: testUser.email } }),
-        shortUrlDb.deleteMany({ where: { shortUrl: shortUrl } }),
+        userDb.deleteMany({ where: { email: { startsWith: 'jest' } } }),
+        shortUrlDb.deleteMany({ where: { originalUrl: { endsWith: 'ts=jest' } } }),
       ])
     })
 
@@ -53,7 +57,6 @@ describe('Redirect Router', () => {
       expect(shortUrl.length).toBeGreaterThan(1);
 
       const result = await request(App).get('/api/v1/r/' + shortUrl).expect(302);
-
       expect(result.headers.location).toBe(testPayload.originalUrl);
     })
 

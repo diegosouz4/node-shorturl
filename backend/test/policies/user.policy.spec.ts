@@ -24,14 +24,14 @@ describe('user.policy', () => {
       const admin1 = createUser('ADMIN', 'admin-1');
       const admin2 = createUser('ADMIN', 'admin-2');
 
-      expect(UserPolicy.canUpdate(admin1, admin2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canUpdate(admin1, admin2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when ADMIN tries to update MASTER user', () => {
       const admin = createUser('ADMIN', 'admin-1');
       const master = createUser('MASTER', 'master-1');
 
-      expect(UserPolicy.canUpdate(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canUpdate(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when MASTER updates non-MASTER user', () => {
@@ -45,14 +45,14 @@ describe('user.policy', () => {
       const master1 = createUser('MASTER', 'master-1');
       const master2 = createUser('MASTER', 'master-2');
 
-      expect(UserPolicy.canUpdate(master1, master2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canUpdate(master1, master2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when FREEBIE tries to update another user', () => {
       const freebie1 = createUser('FREEBIE', 'freebie-1');
       const freebie2 = createUser('FREEBIE', 'freebie-2');
 
-      expect(UserPolicy.canUpdate(freebie1, freebie2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canUpdate(freebie1, freebie2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 
@@ -61,14 +61,14 @@ describe('user.policy', () => {
       const freebie = createUser('FREEBIE', 'freebie-1');
       const target = createUser('SUBSCRIBER', 'sub-1');
 
-      expect(UserPolicy.canAssingRole(freebie, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssingRole(freebie, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when SUBSCRIBER tries to assign role', () => {
       const subscriber = createUser('SUBSCRIBER', 'sub-1');
       const target = createUser('FREEBIE', 'freebie-1');
 
-      expect(UserPolicy.canAssingRole(subscriber, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssingRole(subscriber, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when ADMIN assigns role to non-ADMIN/MASTER', () => {
@@ -82,14 +82,14 @@ describe('user.policy', () => {
       const admin = createUser('ADMIN', 'admin-1');
       const target = createUser('ADMIN', 'admin-2');
 
-      expect(UserPolicy.canAssingRole(admin, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssingRole(admin, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when ADMIN tries to assign role to MASTER', () => {
       const admin = createUser('ADMIN', 'admin-1');
       const master = createUser('MASTER', 'master-1');
 
-      expect(UserPolicy.canAssingRole(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssingRole(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when MASTER assigns role to non-MASTER', () => {
@@ -103,7 +103,7 @@ describe('user.policy', () => {
       const master1 = createUser('MASTER', 'master-1');
       const master2 = createUser('MASTER', 'master-2');
 
-      expect(UserPolicy.canAssingRole(master1, master2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssingRole(master1, master2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 
@@ -119,7 +119,7 @@ describe('user.policy', () => {
       const freebie = createUser('FREEBIE', 'freebie-1');
       const target = createUser('SUBSCRIBER', 'sub-1');
 
-      expect(UserPolicy.canChangeRole(freebie, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canChangeRole(freebie, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 
@@ -127,13 +127,13 @@ describe('user.policy', () => {
     it('should return false when FREEBIE tries to add user', () => {
       const freebie = createUser('FREEBIE', 'freebie-1');
 
-      expect(UserPolicy.canAdd(freebie, 'SUBSCRIBER')).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAdd(freebie, 'SUBSCRIBER')).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when SUBSCRIBER tries to add user', () => {
       const subscriber = createUser('SUBSCRIBER', 'sub-1');
 
-      expect(UserPolicy.canAdd(subscriber, 'FREEBIE')).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAdd(subscriber, 'FREEBIE')).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when ADMIN adds non-ADMIN/MASTER role', () => {
@@ -146,13 +146,13 @@ describe('user.policy', () => {
     it('should return false when ADMIN tries to add ADMIN role', () => {
       const admin = createUser('ADMIN', 'admin-1');
 
-      expect(UserPolicy.canAdd(admin, 'ADMIN')).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAdd(admin, 'ADMIN')).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when ADMIN tries to add MASTER role', () => {
       const admin = createUser('ADMIN', 'admin-1');
 
-      expect(UserPolicy.canAdd(admin, 'MASTER')).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAdd(admin, 'MASTER')).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when MASTER adds non-MASTER role', () => {
@@ -166,7 +166,7 @@ describe('user.policy', () => {
     it('should return false when MASTER tries to add MASTER role', () => {
       const master = createUser('MASTER', 'master-1');
 
-      expect(UserPolicy.canAdd(master, 'MASTER')).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAdd(master, 'MASTER')).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 
@@ -175,7 +175,7 @@ describe('user.policy', () => {
       const user = createUser('ADMIN', 'same-id');
       const target = createUser('ADMIN', 'same-id');
 
-      expect(UserPolicy.canDelete(user, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canDelete(user, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when ADMIN deletes non-ADMIN/MASTER user', () => {
@@ -189,14 +189,14 @@ describe('user.policy', () => {
       const admin1 = createUser('ADMIN', 'admin-1');
       const admin2 = createUser('ADMIN', 'admin-2');
 
-      expect(UserPolicy.canDelete(admin1, admin2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canDelete(admin1, admin2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when ADMIN tries to delete MASTER user', () => {
       const admin = createUser('ADMIN', 'admin-1');
       const master = createUser('MASTER', 'master-1');
 
-      expect(UserPolicy.canDelete(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canDelete(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when MASTER deletes non-MASTER user', () => {
@@ -211,8 +211,8 @@ describe('user.policy', () => {
       const freebie = createUser('FREEBIE', 'freebie-1');
       const master = createUser('MASTER', 'master-1');
 
-      expect(UserPolicy.canDelete(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
-      expect(UserPolicy.canDelete(freebie, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canDelete(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
+      expect(UserPolicy.canDelete(freebie, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 
@@ -228,7 +228,7 @@ describe('user.policy', () => {
       const freebie1 = createUser('FREEBIE', 'freebie-1');
       const freebie2 = createUser('FREEBIE', 'freebie-2');
 
-      expect(UserPolicy.canView(freebie1, freebie2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canView(freebie1, freebie2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 
@@ -248,13 +248,13 @@ describe('user.policy', () => {
     it('should return false for FREEBIE', () => {
       const freebie = createUser('FREEBIE', 'freebie-1');
 
-      expect(UserPolicy.canList(freebie)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canList(freebie)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false for SUBSCRIBER', () => {
       const subscriber = createUser('SUBSCRIBER', 'sub-1');
 
-      expect(UserPolicy.canList(subscriber)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canList(subscriber)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
   });
 
@@ -263,35 +263,35 @@ describe('user.policy', () => {
       const user = createUser('MASTER', 'same-id');
       const target = createUser('MASTER', 'same-id');
 
-      expect(UserPolicy.canAssignStatus(user, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssignStatus(user, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when FREEBIE tries to assign status', () => {
       const freebie = createUser('FREEBIE', 'freebie-1');
       const target = createUser('SUBSCRIBER', 'sub-1');
 
-      expect(UserPolicy.canAssignStatus(freebie, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssignStatus(freebie, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when SUBSCRIBER tries to assign status', () => {
       const subscriber = createUser('SUBSCRIBER', 'sub-1');
       const target = createUser('FREEBIE', 'freebie-1');
 
-      expect(UserPolicy.canAssignStatus(subscriber, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssignStatus(subscriber, target)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when ADMIN tries to assign status to ADMIN user', () => {
       const admin1 = createUser('ADMIN', 'admin-1');
       const admin2 = createUser('ADMIN', 'admin-2');
 
-      expect(UserPolicy.canAssignStatus(admin1, admin2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssignStatus(admin1, admin2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return false when ADMIN tries to assign status to MASTER user', () => {
       const admin = createUser('ADMIN', 'admin-1');
       const master = createUser('MASTER', 'master-1');
 
-      expect(UserPolicy.canAssignStatus(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssignStatus(admin, master)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when ADMIN assigns status to FREEBIE user', () => {
@@ -312,7 +312,7 @@ describe('user.policy', () => {
       const master1 = createUser('MASTER', 'master-1');
       const master2 = createUser('MASTER', 'master-2');
 
-      expect(UserPolicy.canAssignStatus(master1, master2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.UNAUTHORIZED });
+      expect(UserPolicy.canAssignStatus(master1, master2)).toEqual({ isValid: false, statusCode: HTTP_STATUS.FORBIDDEN });
     });
 
     it('should return true when MASTER assigns status to FREEBIE user', () => {
